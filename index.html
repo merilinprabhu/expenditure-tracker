@@ -1,0 +1,2973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Money Expenditure Tracking System</title>
+  
+  <!-- CDNs for External Libraries -->
+  <!-- Supabase JS Client SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Chart.js for graphs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Premium Dark Glassmorphism CSS Stylesheet -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+    :root {
+      --bg-primary: #0b0f19;
+      --bg-secondary: #111827;
+      --bg-card: rgba(21, 28, 44, 0.6);
+      --bg-hover: rgba(31, 41, 55, 0.8);
+      
+      --accent-primary: #6366f1; /* Indigo */
+      --accent-primary-glow: rgba(99, 102, 241, 0.15);
+      
+      --accent-success: #10b981; /* Emerald */
+      --accent-success-glow: rgba(16, 185, 129, 0.15);
+      
+      --accent-danger: #ef4444; /* Rose */
+      --accent-danger-glow: rgba(239, 68, 68, 0.15);
+      
+      --accent-warning: #f59e0b; /* Amber */
+      --accent-warning-glow: rgba(245, 158, 11, 0.15);
+
+      --text-primary: #f3f4f6;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+      
+      --glass-border: rgba(255, 255, 255, 0.06);
+      --glass-shadow: rgba(0, 0, 0, 0.3);
+      --card-radius: 16px;
+      --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.1) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.08) 0px, transparent 50%),
+        radial-gradient(at 50% 100%, rgba(239, 68, 68, 0.05) 0px, transparent 50%);
+      background-attachment: fixed;
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-primary);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Common App Layout */
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* Sidebar Styling */
+    .sidebar {
+      width: 260px;
+      background: rgba(17, 24, 39, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-right: 1px solid var(--glass-border);
+      padding: 2rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 100;
+      transition: var(--transition-smooth);
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 2.5rem;
+      padding: 0 0.5rem;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-success));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 1.25rem;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .logo-text {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(to right, #ffffff, #9ca3af);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .nav-item a {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.85rem 1rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: var(--transition-smooth);
+      border: 1px solid transparent;
+    }
+
+    .nav-item a:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    .nav-item.active a {
+      background: var(--accent-primary-glow);
+      color: #a5b4fc;
+      border-color: rgba(99, 102, 241, 0.25);
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.05);
+    }
+
+    .nav-item.active a i, .nav-item.active a svg {
+      color: #818cf8;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--glass-border);
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      background: var(--bg-hover);
+      border: 1px solid var(--glass-border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .user-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .user-email {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .logout-btn {
+      width: 100%;
+      padding: 0.75rem;
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: var(--font-family);
+      font-weight: 500;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: var(--transition-smooth);
+    }
+
+    .logout-btn:hover {
+      background: var(--accent-danger);
+      color: white;
+      box-shadow: 0 4px 12px var(--accent-danger-glow);
+    }
+
+    /* Main Content Area */
+    .main-content {
+      flex: 1;
+      margin-left: 260px;
+      padding: 2rem 2.5rem;
+      min-height: 100vh;
+      transition: var(--transition-smooth);
+    }
+
+    /* Header & Top Bar */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .page-title h1 {
+      font-size: 1.85rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .page-title p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      margin-top: 0.25rem;
+    }
+
+    /* Navigation tabs inside pages */
+    .tab-navigation {
+      display: flex;
+      gap: 0.5rem;
+      background: rgba(17, 24, 39, 0.4);
+      padding: 0.25rem;
+      border-radius: 10px;
+      border: 1px solid var(--glass-border);
+      width: fit-content;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      padding: 0.5rem 1.25rem;
+      color: var(--text-secondary);
+      font-family: var(--font-family);
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: var(--transition-smooth);
+    }
+
+    .tab-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .tab-btn.active {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Cards (Glassmorphism) */
+    .glass-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--card-radius);
+      padding: 1.5rem;
+      box-shadow: 0 10px 30px var(--glass-shadow);
+      transition: var(--transition-smooth);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass-card:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .glass-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: transparent;
+      transition: var(--transition-smooth);
+    }
+
+    .glass-card.primary::before { background: var(--accent-primary); }
+    .glass-card.success::before { background: var(--accent-success); }
+    .glass-card.danger::before { background: var(--accent-danger); }
+    .glass-card.warning::before { background: var(--accent-warning); }
+
+    /* Quick Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 0.75rem;
+    }
+
+    .stat-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+
+    .primary .stat-icon { background: var(--accent-primary-glow); color: #818cf8; }
+    .success .stat-icon { background: var(--accent-success-glow); color: #34d399; }
+    .danger .stat-icon { background: var(--accent-danger-glow); color: #f87171; }
+    .warning .stat-icon { background: var(--accent-warning-glow); color: #fbbf24; }
+
+    .stat-value {
+      font-size: 1.85rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-footer {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    /* Charts Grid */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 1024px) {
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .chart-card {
+      min-height: 320px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chart-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .chart-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .chart-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .chart-container {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      min-height: 240px;
+    }
+
+    /* Forms Section */
+    .form-card {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.25rem;
+    }
+
+    .form-group.full-width {
+      grid-column: span 2;
+    }
+
+    @media (max-width: 600px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      .form-group.full-width {
+        grid-column: span 1;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .form-group label {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .form-control {
+      background: rgba(17, 24, 39, 0.6);
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      color: var(--text-primary);
+      font-family: var(--font-family);
+      font-size: 0.95rem;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+
+    .form-control:focus {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+      background: rgba(17, 24, 39, 0.8);
+    }
+
+    .form-control::placeholder {
+      color: var(--text-muted);
+    }
+
+    select.form-control {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      background-size: 1.25rem;
+      padding-right: 2.5rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: var(--bg-hover);
+      color: var(--text-primary);
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      padding: 0.75rem 1.5rem;
+      font-family: var(--font-family);
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .btn-primary {
+      background: var(--accent-primary);
+      border-color: var(--accent-primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #4f46e5;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-success {
+      background: var(--accent-success);
+      border-color: var(--accent-success);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #059669;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-danger {
+      background: var(--accent-danger);
+      border-color: var(--accent-danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+    }
+
+    .btn-full {
+      width: 100%;
+    }
+
+    /* Tables section */
+    .table-card {
+      overflow: hidden;
+    }
+
+    .table-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .search-filter {
+      display: flex;
+      gap: 0.75rem;
+      flex: 1;
+      max-width: 400px;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      width: 100%;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+
+    th {
+      color: var(--text-secondary);
+      font-weight: 500;
+      padding: 1rem;
+      border-bottom: 1px solid var(--glass-border);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      padding: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      color: var(--text-primary);
+      font-weight: 400;
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* Status & Type Pills */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      text-transform: capitalize;
+    }
+
+    .pill-success {
+      background: rgba(16, 185, 129, 0.1);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .pill-danger {
+      background: rgba(239, 68, 68, 0.1);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .pill-warning {
+      background: rgba(245, 158, 11, 0.1);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .pill-info {
+      background: rgba(99, 102, 241, 0.1);
+      color: #a5b4fc;
+      border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+
+    /* Empty State */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1.5rem;
+      text-align: center;
+      color: var(--text-secondary);
+    }
+
+    .empty-state-icon {
+      font-size: 2.5rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+
+    .empty-state h3 {
+      color: var(--text-primary);
+      font-size: 1.1rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .empty-state p {
+      font-size: 0.85rem;
+      max-width: 300px;
+    }
+
+    /* Login Page Styling */
+    .auth-wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      position: relative;
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(21, 28, 44, 0.7);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .auth-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .auth-logo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-success));
+      border-radius: 12px;
+      color: white;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+    }
+
+    .auth-title {
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .auth-subtitle {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-top: 0.35rem;
+    }
+
+    .auth-toggle {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .auth-toggle-link {
+      color: var(--accent-primary);
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .auth-toggle-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Settings Warning Banner */
+    .warning-banner {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-radius: 12px;
+      padding: 1rem;
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+      color: #fbbf24;
+      font-size: 0.9rem;
+    }
+
+    .warning-banner svg {
+      flex-shrink: 0;
+      margin-top: 0.15rem;
+    }
+
+    /* Page management (sections showing/hiding) */
+    .page-section {
+      display: none;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .page-section.active {
+      display: block;
+    }
+
+    .sub-tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .sub-tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Toast System */
+    .toast-container {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      pointer-events: none;
+    }
+
+    .toast {
+      pointer-events: auto;
+      min-width: 300px;
+      max-width: 450px;
+      background: rgba(21, 28, 44, 0.85);
+      backdrop-filter: blur(15px);
+      border: 1px solid var(--glass-border);
+      padding: 1rem 1.25rem;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transform: translateX(120%);
+      transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .toast.show {
+      transform: translateX(0);
+    }
+
+    .toast-icon {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+    }
+
+    .toast-message {
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      flex-grow: 1;
+    }
+
+    .toast-close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .toast-success .toast-icon { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+    .toast-error .toast-icon { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .toast-info .toast-icon { background: rgba(99, 102, 241, 0.2); color: #6366f1; }
+    .toast-warning .toast-icon { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .app-container {
+        flex-direction: column;
+      }
+      
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: 1rem 1.5rem;
+        border-right: none;
+        border-bottom: 1px solid var(--glass-border);
+      }
+      
+      .logo-container {
+        margin-bottom: 1rem;
+      }
+      
+      .nav-links {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+        gap: 0.5rem;
+      }
+      
+      .nav-item a {
+        white-space: nowrap;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+      }
+      
+      .sidebar-footer {
+        display: none; /* Hide profile in mobile header */
+      }
+      
+      .main-content {
+        margin-left: 0;
+        padding: 1.5rem;
+      }
+      
+      .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Toast Notification System -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Main Application Wrapper -->
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation (Hidden on Login Screen) -->
+    <aside class="sidebar" id="app-sidebar" style="display: none;">
+      <div class="logo-container">
+        <div class="logo-icon">₹</div>
+        <span class="logo-text">Finance Tracker</span>
+      </div>
+      
+      <nav>
+        <ul class="nav-links">
+          <li class="nav-item" id="nav-dashboard">
+            <a href="#dashboard">
+              <i data-lucide="layout-dashboard"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item" id="nav-yono">
+            <a href="#yono">
+              <i data-lucide="wallet"></i>
+              <span>Yono Bank</span>
+            </a>
+          </li>
+          <li class="nav-item" id="nav-sip">
+            <a href="#sip">
+              <i data-lucide="trending-up"></i>
+              <span>SIP Statements</span>
+            </a>
+          </li>
+          <li class="nav-item" id="nav-salary">
+            <a href="#salary">
+              <i data-lucide="banknote"></i>
+              <span>Salary Account</span>
+            </a>
+          </li>
+          <li class="nav-item" id="nav-settings">
+            <a href="#settings">
+              <i data-lucide="settings"></i>
+              <span>Settings</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="user-profile">
+          <div class="user-avatar" id="profile-avatar">U</div>
+          <div class="user-info">
+            <span class="user-name" id="profile-name">Loading...</span>
+            <span class="user-email" id="profile-email">email@domain.com</span>
+          </div>
+        </div>
+        <button class="logout-btn" id="btn-logout">
+          <i data-lucide="log-out"></i>
+          <span>Sign Out</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content" id="app-main-content">
+      
+      <!-- 1. LOGIN & SIGN UP PAGE -->
+      <section id="login" class="page-section auth-wrapper">
+        <div class="auth-card">
+          <div class="auth-header">
+            <div class="auth-logo">₹</div>
+            <h2 class="auth-title" id="auth-title">Sign In</h2>
+            <p class="auth-subtitle" id="auth-subtitle">Track your wealth in one unified console</p>
+          </div>
+          
+          <!-- Supabase Config Alert Banner -->
+          <div id="login-keys-alert" class="warning-banner" style="display: none;">
+            <i data-lucide="alert-triangle"></i>
+            <div>
+              <strong>Setup Required:</strong> Open settings (gear icon) or configure your Supabase credentials to log in.
+            </div>
+          </div>
+          
+          <form id="auth-form">
+            <div class="form-grid" style="grid-template-columns: 1fr;">
+              <div class="form-group">
+                <label for="auth-email">Email Address</label>
+                <input type="email" id="auth-email" class="form-control" placeholder="name@example.com" required autocomplete="username">
+              </div>
+              <div class="form-group">
+                <label for="auth-password">Password</label>
+                <input type="password" id="auth-password" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+              </div>
+              <button type="submit" class="btn btn-primary btn-full" id="btn-auth-submit">
+                <span>Sign In</span>
+                <i data-lucide="arrow-right"></i>
+              </button>
+            </div>
+          </form>
+          
+          <div class="auth-toggle">
+            <span id="auth-toggle-text">Don't have an account? </span>
+            <a class="auth-toggle-link" id="auth-toggle-btn">Sign Up</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. MAIN DASHBOARD PAGE -->
+      <section id="dashboard" class="page-section">
+        <div class="top-bar">
+          <div class="page-title">
+            <h1 id="dashboard-welcome">Hello User!</h1>
+            <p>Here is your consolidated financial snapshot.</p>
+          </div>
+          <a href="#yono" class="btn btn-primary">
+            <i data-lucide="plus"></i>
+            <span>Add Transaction</span>
+          </a>
+        </div>
+        
+        <!-- Stats Widgets -->
+        <div class="stats-grid">
+          <div class="glass-card primary">
+            <div class="stat-header">
+              <span>Total Bank Balance</span>
+              <div class="stat-icon"><i data-lucide="wallet"></i></div>
+            </div>
+            <div class="stat-value" id="dash-bank-balance">₹0.00</div>
+            <div class="stat-footer">
+              <i data-lucide="info"></i>
+              <span>Sum from Yono statement records</span>
+            </div>
+          </div>
+          
+          <div class="glass-card success">
+            <div class="stat-header">
+              <span>Net Monthly Income</span>
+              <div class="stat-icon"><i data-lucide="banknote"></i></div>
+            </div>
+            <div class="stat-value" id="dash-net-salary">₹0.00</div>
+            <div class="stat-footer">
+              <i data-lucide="arrow-up-right"></i>
+              <span id="dash-salary-month">Latest Credited Salary</span>
+            </div>
+          </div>
+          
+          <div class="glass-card warning">
+            <div class="stat-header">
+              <span>Total Investments (SIP)</span>
+              <div class="stat-icon"><i data-lucide="trending-up"></i></div>
+            </div>
+            <div class="stat-value" id="dash-sip-invested">₹0.00</div>
+            <div class="stat-footer">
+              <i data-lucide="trending-up"></i>
+              <span>Total Capital Invested</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Charts Layout -->
+        <div class="charts-grid">
+          <div class="glass-card chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">Income & Expense Overview</h3>
+              <p class="chart-subtitle">Monthly credit vs debit trends</p>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-dash-cashflow"></canvas>
+            </div>
+          </div>
+          
+          <div class="glass-card chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">SIP Investment</h3>
+              <p class="chart-subtitle">Asset allocation across schemes</p>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-dash-investments"></canvas>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Recent entries from all tabs -->
+        <div class="glass-card table-card">
+          <div class="table-header-row">
+            <h3 class="chart-title">Recent Transactions</h3>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Source/Account</th>
+                  <th>Description/Scheme</th>
+                  <th>Type</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody id="dash-recent-tbody">
+                <tr>
+                  <td colspan="5" style="text-align: center; color: var(--text-muted);">Loading transactions...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. YONO BANK STATEMENT PAGE -->
+      <section id="yono" class="page-section">
+        <div class="top-bar">
+          <div class="page-title">
+            <h1>Yono Bank Management</h1>
+            <p>Track your bank statements, credits, debits, and categories.</p>
+          </div>
+          <div class="tab-navigation">
+            <button class="tab-btn active" onclick="switchSubTab('yono', 'dash')">Dashboard</button>
+            <button class="tab-btn" onclick="switchSubTab('yono', 'entry')">Entry Form</button>
+            <button class="tab-btn" onclick="switchSubTab('yono', 'history')">History Ledger</button>
+          </div>
+        </div>
+        
+        <!-- YONO: DASHBOARD TAB -->
+        <div id="yono-subtab-dash" class="sub-tab-content active">
+          <div class="stats-grid">
+            <div class="glass-card primary">
+              <div class="stat-header">
+                <span>Account Balance</span>
+                <div class="stat-icon"><i data-lucide="wallet"></i></div>
+              </div>
+              <div class="stat-value" id="yono-stat-balance">₹0.00</div>
+              <div class="stat-footer">
+                <span>Calculated from statement transactions</span>
+              </div>
+            </div>
+            <div class="glass-card success">
+              <div class="stat-header">
+                <span>Total Credits</span>
+                <div class="stat-icon"><i data-lucide="arrow-down-left"></i></div>
+              </div>
+              <div class="stat-value" id="yono-stat-credit">₹0.00</div>
+              <div class="stat-footer">
+                <span>All time credits</span>
+              </div>
+            </div>
+            <div class="glass-card danger">
+              <div class="stat-header">
+                <span>Total Debits</span>
+                <div class="stat-icon"><i data-lucide="arrow-up-right"></i></div>
+              </div>
+              <div class="stat-value" id="yono-stat-debit">₹0.00</div>
+              <div class="stat-footer">
+                <span>All time debits</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="charts-grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="glass-card chart-card">
+              <div class="chart-header">
+                <h3 class="chart-title">Debits by Category</h3>
+                <p class="chart-subtitle">Where is your money going?</p>
+              </div>
+              <div class="chart-container">
+                <canvas id="chart-yono-categories"></canvas>
+              </div>
+            </div>
+            <div class="glass-card chart-card">
+              <div class="chart-header">
+                <h3 class="chart-title">Credit vs Debit Balance Monthly</h3>
+                <p class="chart-subtitle">Monthly cash flow trends</p>
+              </div>
+              <div class="chart-container">
+                <canvas id="chart-yono-monthly"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- YONO: ENTRY FORM TAB -->
+        <div id="yono-subtab-entry" class="sub-tab-content">
+          <div class="glass-card form-card">
+            <h3 class="chart-title" style="margin-bottom: 1.5rem;">Add Bank Statement Transaction</h3>
+            <form id="yono-form">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="yono-date">Transaction Date</label>
+                  <input type="date" id="yono-date" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label for="yono-type">Transaction Type</label>
+                  <select id="yono-type" class="form-control" required>
+                    <option value="debit" selected>Debit (Withdrawal / Expense)</option>
+                    <option value="credit">Credit (Deposit / Income)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="yono-amount">Amount (₹)</label>
+                  <input type="number" id="yono-amount" class="form-control" step="0.01" min="0.01" placeholder="0.00" required>
+                </div>
+                <div class="form-group">
+                  <label for="yono-category">Category</label>
+                  <select id="yono-category" class="form-control" required>
+                    <option value="Food & Dining">Food & Dining</option>
+                    <option value="Rent & Housing">Rent & Housing</option>
+                    <option value="Utilities & Bills">Utilities & Bills</option>
+                    <option value="Shopping & Lifestyle">Shopping & Lifestyle</option>
+                    <option value="Transport & Fuel">Transport & Fuel</option>
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Investment">Investment Transfer</option>
+                    <option value="Salary & Wages">Salary & Wages</option>
+                    <option value="Others">Others</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="yono-ref">Ref No / Cheque No (Optional)</label>
+                  <input type="text" id="yono-ref" class="form-control" placeholder="UPI/Ref ID">
+                </div>
+                <div class="form-group">
+                  <label for="yono-balance">Running Balance (Optional - Auto calculated if blank)</label>
+                  <input type="number" id="yono-balance" class="form-control" step="0.01" placeholder="Current Balance">
+                </div>
+                <div class="form-group full-width">
+                  <label for="yono-desc">Transaction Description</label>
+                  <input type="text" id="yono-desc" class="form-control" placeholder="e.g. Swiggy order / UPI payout" required>
+                </div>
+                
+                <div class="form-group full-width" style="margin-top: 1rem;">
+                  <button type="submit" class="btn btn-primary btn-full">Save Transaction</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        
+        <!-- YONO: HISTORY TAB -->
+        <div id="yono-subtab-history" class="sub-tab-content">
+          <div class="glass-card table-card">
+            <div class="table-header-row">
+              <h3 class="chart-title">Transaction Ledger</h3>
+              <div class="search-filter">
+                <input type="text" id="yono-search" class="form-control" style="padding: 0.5rem 1rem;" placeholder="Search description...">
+                <select id="yono-filter-category" class="form-control" style="padding: 0.5rem 2rem 0.5rem 1rem; width: 160px;">
+                  <option value="">All Categories</option>
+                  <option value="Food & Dining">Food & Dining</option>
+                  <option value="Rent & Housing">Rent & Housing</option>
+                  <option value="Utilities & Bills">Utilities & Bills</option>
+                  <option value="Shopping & Lifestyle">Shopping & Lifestyle</option>
+                  <option value="Transport & Fuel">Transport & Fuel</option>
+                  <option value="Entertainment">Entertainment</option>
+                  <option value="Investment">Investment</option>
+                  <option value="Salary & Wages">Salary & Wages</option>
+                  <option value="Others">Others</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Ref No</th>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Balance</th>
+                    <th style="width: 80px;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="yono-tbody">
+                  <tr>
+                    <td colspan="8" style="text-align: center; color: var(--text-muted);">No transactions recorded.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. SIP STATEMENT PAGE -->
+      <section id="sip" class="page-section">
+        <div class="top-bar">
+          <div class="page-title">
+            <h1>Systematic Investment Plans (SIP)</h1>
+            <p>Monitor your mutual funds, units purchased, NAVs, and total returns.</p>
+          </div>
+          <div class="tab-navigation">
+            <button class="tab-btn active" onclick="switchSubTab('sip', 'dash')">Dashboard</button>
+            <button class="tab-btn" onclick="switchSubTab('sip', 'entry')">Entry Form</button>
+            <button class="tab-btn" onclick="switchSubTab('sip', 'history')">History Ledger</button>
+          </div>
+        </div>
+        
+        <!-- SIP: DASHBOARD TAB -->
+        <div id="sip-subtab-dash" class="sub-tab-content active">
+          <div class="stats-grid">
+            <div class="glass-card warning">
+              <div class="stat-header">
+                <span>Total Invested Capital</span>
+                <div class="stat-icon"><i data-lucide="trending-up"></i></div>
+              </div>
+              <div class="stat-value" id="sip-stat-invested">₹0.00</div>
+              <div class="stat-footer">
+                <span>Sum of all SIP transactions</span>
+              </div>
+            </div>
+            
+            <div class="glass-card primary">
+              <div class="stat-header">
+                <span>Active Schemes Count</span>
+                <div class="stat-icon"><i data-lucide="layers"></i></div>
+              </div>
+              <div class="stat-value" id="sip-stat-schemes">0</div>
+              <div class="stat-footer">
+                <span>Unique mutual funds portfolios</span>
+              </div>
+            </div>
+            
+            <div class="glass-card success">
+              <div class="stat-header">
+                <span>Total Units Held</span>
+                <div class="stat-icon"><i data-lucide="bar-chart-2"></i></div>
+              </div>
+              <div class="stat-value" id="sip-stat-units">0.000</div>
+              <div class="stat-footer">
+                <span>Accumulated portfolio units</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="charts-grid" style="grid-template-columns: 1fr;">
+            <div class="glass-card chart-card">
+              <div class="chart-header">
+                <h3 class="chart-title">Fund Distribution</h3>
+                <p class="chart-subtitle">Capital allocated across different mutual funds schemes</p>
+              </div>
+              <div class="chart-container">
+                <canvas id="chart-sip-distribution"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- SIP: ENTRY FORM TAB -->
+        <div id="sip-subtab-entry" class="sub-tab-content">
+          <div class="glass-card form-card">
+            <h3 class="chart-title" style="margin-bottom: 1.5rem;">Record SIP Transaction</h3>
+            <form id="sip-form">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="sip-date">Investment Date</label>
+                  <input type="date" id="sip-date" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label for="sip-action">Action Type</label>
+                  <select id="sip-action" class="form-control" required>
+                    <option value="buy" selected>Buy (Purchase/SIP Installment)</option>
+                    <option value="sell">Sell (Redeem/Withdrawal)</option>
+                  </select>
+                </div>
+                <div class="form-group full-width">
+                  <label for="sip-scheme">Mutual Fund Scheme Name</label>
+                  <input type="text" id="sip-scheme" class="form-control" placeholder="e.g. Parag Parikh Flexi Cap Fund" required>
+                </div>
+                <div class="form-group">
+                  <label for="sip-amount">Investment Amount (₹)</label>
+                  <input type="number" id="sip-amount" class="form-control" step="0.01" min="0.01" placeholder="0.00" required>
+                </div>
+                <div class="form-group">
+                  <label for="sip-nav">Net Asset Value (NAV) at Purchase</label>
+                  <input type="number" id="sip-nav" class="form-control" step="0.0001" placeholder="Optional - NAV rate">
+                </div>
+                <div class="form-group">
+                  <label for="sip-units">Units Allocated (Optional - Auto calculated if NAV present)</label>
+                  <input type="number" id="sip-units" class="form-control" step="0.0001" placeholder="e.g. 23.4561">
+                </div>
+                
+                <div class="form-group full-width" style="margin-top: 1rem;">
+                  <button type="submit" class="btn btn-warning btn-full" style="color: black; font-weight: 600;">Save SIP Entry</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        
+        <!-- SIP: HISTORY TAB -->
+        <div id="sip-subtab-history" class="sub-tab-content">
+          <div class="glass-card table-card">
+            <div class="table-header-row">
+              <h3 class="chart-title">SIP Transaction Ledger</h3>
+              <div class="search-filter">
+                <input type="text" id="sip-search" class="form-control" style="padding: 0.5rem 1rem;" placeholder="Search fund name...">
+              </div>
+            </div>
+            
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Mutual Fund Scheme</th>
+                    <th>Action</th>
+                    <th>NAV (₹)</th>
+                    <th>Units</th>
+                    <th>Amount (₹)</th>
+                    <th style="width: 80px;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="sip-tbody">
+                  <tr>
+                    <td colspan="7" style="text-align: center; color: var(--text-muted);">No SIP entries recorded.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. SALARY ACCOUNT MANAGEMENT PAGE -->
+      <section id="salary" class="page-section">
+        <div class="top-bar">
+          <div class="page-title">
+            <h1>Salary Account Management</h1>
+            <p>Oversee your salary receipts, deductions, allowances, and monthly savings trends.</p>
+          </div>
+          <div class="tab-navigation">
+            <button class="tab-btn active" onclick="switchSubTab('salary', 'dash')">Dashboard</button>
+            <button class="tab-btn" onclick="switchSubTab('salary', 'entry')">Entry Sheet</button>
+            <button class="tab-btn" onclick="switchSubTab('salary', 'history')">History Ledger</button>
+          </div>
+        </div>
+        
+        <!-- SALARY: DASHBOARD TAB -->
+        <div id="salary-subtab-dash" class="sub-tab-content active">
+          <div class="stats-grid">
+            <div class="glass-card success">
+              <div class="stat-header">
+                <span>All-time Net Income</span>
+                <div class="stat-icon"><i data-lucide="banknote"></i></div>
+              </div>
+              <div class="stat-value" id="sal-stat-net-income">₹0.00</div>
+              <div class="stat-footer">
+                <span>Sum of all credited salaries</span>
+              </div>
+            </div>
+            
+            <div class="glass-card primary">
+              <div class="stat-header">
+                <span>Avg Monthly Salary</span>
+                <div class="stat-icon"><i data-lucide="bar-chart-3"></i></div>
+              </div>
+              <div class="stat-value" id="sal-stat-avg-net">₹0.00</div>
+              <div class="stat-footer">
+                <span>Average monthly net payout</span>
+              </div>
+            </div>
+            
+            <div class="glass-card danger">
+              <div class="stat-header">
+                <span>Accumulated Deductions</span>
+                <div class="stat-icon"><i data-lucide="scissors"></i></div>
+              </div>
+              <div class="stat-value" id="sal-stat-deductions">₹0.00</div>
+              <div class="stat-footer">
+                <span>Taxes, PF, and other cuts</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="charts-grid" style="grid-template-columns: 1fr;">
+            <div class="glass-card chart-card">
+              <div class="chart-header">
+                <h3 class="chart-title">Net Pay Check Trend</h3>
+                <p class="chart-subtitle">Salary timeline month-on-month</p>
+              </div>
+              <div class="chart-container">
+                <canvas id="chart-salary-trend"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- SALARY: ENTRY FORM TAB -->
+        <div id="salary-subtab-entry" class="sub-tab-content">
+          <div class="glass-card form-card">
+            <h3 class="chart-title" style="margin-bottom: 1.5rem;">Record Salary Pay Slip</h3>
+            <form id="salary-form">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="sal-month">Salary Month</label>
+                  <input type="month" id="sal-month" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label for="sal-date">Credited Date</label>
+                  <input type="date" id="sal-date" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label for="sal-base">Base Salary (₹)</label>
+                  <input type="number" id="sal-base" class="form-control" step="0.01" min="0.00" placeholder="0.00" required>
+                </div>
+                <div class="form-group">
+                  <label for="sal-allowance">Allowances / Bonuses (₹)</label>
+                  <input type="number" id="sal-allowance" class="form-control" step="0.01" min="0.00" value="0.00">
+                </div>
+                <div class="form-group">
+                  <label for="sal-deductions">Deductions / PF / Tax (₹)</label>
+                  <input type="number" id="sal-deductions" class="form-control" step="0.01" min="0.00" value="0.00">
+                </div>
+                <div class="form-group">
+                  <label for="sal-status">Status</label>
+                  <select id="sal-status" class="form-control" required>
+                    <option value="credited" selected>Credited</option>
+                    <option value="pending">Pending</option>
+                  </select>
+                </div>
+                
+                <div class="form-group full-width" style="margin-top: 1rem;">
+                  <button type="submit" class="btn btn-success btn-full">Save Salary Log</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        
+        <!-- SALARY: HISTORY TAB -->
+        <div id="salary-subtab-history" class="sub-tab-content">
+          <div class="glass-card table-card">
+            <div class="table-header-row">
+              <h3 class="chart-title">Salary Ledger</h3>
+            </div>
+            
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Month/Year</th>
+                    <th>Credited Date</th>
+                    <th>Base Salary (₹)</th>
+                    <th>Allowances (₹)</th>
+                    <th>Deductions (₹)</th>
+                    <th>Net Salary (₹)</th>
+                    <th>Status</th>
+                    <th style="width: 80px;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="salary-tbody">
+                  <tr>
+                    <td colspan="8" style="text-align: center; color: var(--text-muted);">No salary sheets recorded.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. SETTINGS & SETUP PAGE -->
+      <section id="settings" class="page-section">
+        <div class="top-bar">
+          <div class="page-title">
+            <h1>Settings & System Setup</h1>
+            <p>Configure Supabase connections, secure credentials, and reset database states.</p>
+          </div>
+        </div>
+        
+        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+          
+          <!-- Supabase Config Card -->
+          <div class="glass-card primary">
+            <h3 class="chart-title" style="margin-bottom: 1rem;"><i data-lucide="key" style="vertical-align: middle; margin-right: 0.5rem;"></i>Supabase Connection</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+              Enter your credentials to link Supabase. Credentials are saved locally in your browser's encrypted workspace cache (`localStorage`).
+            </p>
+            
+            <form id="settings-db-form">
+              <div class="form-group" style="margin-bottom: 1rem;">
+                <label for="settings-sb-url">Supabase API URL</label>
+                <input type="url" id="settings-sb-url" class="form-control" placeholder="https://your-project-id.supabase.co" required>
+              </div>
+              <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label for="settings-sb-key">Supabase Anon Key</label>
+                <input type="password" id="settings-sb-key" class="form-control" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." required>
+              </div>
+              
+              <div style="display: flex; gap: 0.75rem;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Save Credentials</button>
+                <button type="button" id="btn-test-connection" class="btn" style="flex: 1;">
+                  <i data-lucide="wifi"></i>
+                  <span>Test Connect</span>
+                </button>
+              </div>
+            </form>
+          </div>
+          
+          <!-- DB Setup Script copy card -->
+          <div class="glass-card success" style="display: flex; flex-direction: column;">
+            <h3 class="chart-title" style="margin-bottom: 0.5rem;"><i data-lucide="database" style="vertical-align: middle; margin-right: 0.5rem;"></i>Database Tables Setup</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+              Ensure the schema is deployed in your Supabase project. Open the <strong>SQL Editor</strong> in Supabase, create a new query, paste our script and run it.
+            </p>
+            <div style="background: rgba(17, 24, 39, 0.7); border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.75rem; font-family: monospace; font-size: 0.75rem; color: #a5b4fc; flex: 1; overflow-y: auto; max-height: 180px; margin-bottom: 1rem; white-space: pre-wrap;" id="sql-preview">
+-- Loading schema instructions...
+            </div>
+            <button id="btn-copy-sql" class="btn btn-success btn-full">
+              <i data-lucide="copy"></i>
+              <span>Copy SQL Script</span>
+            </button>
+          </div>
+          
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- JavaScript Single Page Application Logic -->
+  <script>
+    // Global Application State
+    const state = {
+      supabaseUrl: localStorage.getItem('finance_sb_url') || '',
+      supabaseAnonKey: localStorage.getItem('finance_sb_key') || '',
+      supabase: null,
+      currentUser: null,
+      activeCharts: {},
+      yonoData: [],
+      sipData: [],
+      salaryData: []
+    };
+
+    // SQL Schema string to display in settings
+    const sqlSchemaText = `-- Enable UUID extension if not already enabled
+create extension if not exists "uuid-ossp";
+
+-- Create tables
+create table if not exists public.yono_statements (
+    id uuid default gen_random_uuid() primary key,
+    user_id uuid references auth.users(id) on delete cascade not null,
+    date date not null,
+    description text not null,
+    ref_no text,
+    amount numeric(12, 2) not null,
+    transaction_type text check (transaction_type in ('credit', 'debit')) not null,
+    balance numeric(12, 2),
+    category text default 'Uncategorized',
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+create table if not exists public.sip_statements (
+    id uuid default gen_random_uuid() primary key,
+    user_id uuid references auth.users(id) on delete cascade not null,
+    date date not null,
+    scheme_name text not null,
+    amount numeric(12, 2) not null,
+    units numeric(12, 4),
+    nav numeric(12, 4),
+    transaction_type text check (transaction_type in ('buy', 'sell')) not null,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+create table if not exists public.salary_accounts (
+    id uuid default gen_random_uuid() primary key,
+    user_id uuid references auth.users(id) on delete cascade not null,
+    month_year text not null, -- Format: YYYY-MM
+    base_salary numeric(12, 2) not null,
+    allowances numeric(12, 2) default 0.00,
+    deductions numeric(12, 2) default 0.00,
+    net_salary numeric(12, 2) not null,
+    credited_date date not null,
+    status text check (status in ('credited', 'pending')) not null,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+    constraint unique_user_month_year unique (user_id, month_year)
+);
+
+-- Set up Row Level Security (RLS)
+alter table public.yono_statements enable row level security;
+alter table public.sip_statements enable row level security;
+alter table public.salary_accounts enable row level security;
+
+-- Create policies (select, insert, update, delete) for authenticated owner
+create policy "Users can view their own yono statements" on public.yono_statements for select using (auth.uid() = user_id);
+create policy "Users can insert their own yono statements" on public.yono_statements for insert with check (auth.uid() = user_id);
+create policy "Users can update their own yono statements" on public.yono_statements for update using (auth.uid() = user_id);
+create policy "Users can delete their own yono statements" on public.yono_statements for delete using (auth.uid() = user_id);
+
+create policy "Users can view their own sip statements" on public.sip_statements for select using (auth.uid() = user_id);
+create policy "Users can insert their own sip statements" on public.sip_statements for insert with check (auth.uid() = user_id);
+create policy "Users can update their own sip statements" on public.sip_statements for update using (auth.uid() = user_id);
+create policy "Users can delete their own sip statements" on public.sip_statements for delete using (auth.uid() = user_id);
+
+create policy "Users can view their own salary accounts" on public.salary_accounts for select using (auth.uid() = user_id);
+create policy "Users can insert their own salary accounts" on public.salary_accounts for insert with check (auth.uid() = user_id);
+create policy "Users can update their own salary accounts" on public.salary_accounts for update using (auth.uid() = user_id);
+create policy "Users can delete their own salary accounts" on public.salary_accounts for delete using (auth.uid() = user_id);
+`;
+
+    // Helper: Show Toast notifications
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      
+      let iconName = 'info';
+      if (type === 'success') iconName = 'check-circle';
+      if (type === 'error') iconName = 'x-circle';
+      if (type === 'warning') iconName = 'alert-triangle';
+      
+      toast.innerHTML = `
+        <div class="toast-icon"><i data-lucide="${iconName}"></i></div>
+        <div class="toast-message">${message}</div>
+        <button class="toast-close">&times;</button>
+      `;
+      
+      container.appendChild(toast);
+      lucide.createIcons();
+      
+      // Animate in
+      setTimeout(() => toast.classList.add('show'), 50);
+      
+      // Close handler
+      const closeBtn = toast.querySelector('.toast-close');
+      closeBtn.addEventListener('click', () => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      });
+      
+      // Auto remove
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.classList.remove('show');
+          setTimeout(() => toast.remove(), 300);
+        }
+      }, 4000);
+    }
+
+    // 1. Supabase Initialization
+    function initSupabase() {
+      if (state.supabaseUrl && state.supabaseAnonKey) {
+        try {
+          state.supabase = supabase.createClient(state.supabaseUrl, state.supabaseAnonKey);
+          document.getElementById('login-keys-alert').style.display = 'none';
+          return true;
+        } catch (err) {
+          console.error('Supabase init error:', err);
+          showToast('Invalid Supabase configuration parameters.', 'error');
+          state.supabase = null;
+          return false;
+        }
+      } else {
+        state.supabase = null;
+        document.getElementById('login-keys-alert').style.display = 'flex';
+        return false;
+      }
+    }
+
+    // Helper: Format Currency in INR
+    function formatINR(val) {
+      const num = parseFloat(val);
+      if (isNaN(num)) return '₹0.00';
+      return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 2
+      }).format(num);
+    }
+
+    // Helper: Format Month-Year (YYYY-MM to Month YYYY)
+    function formatMonthYear(monthStr) {
+      if (!monthStr) return '';
+      const [year, month] = monthStr.split('-');
+      const date = new Date(year, parseInt(month) - 1, 1);
+      return date.toLocaleString('default', { month: 'long', year: 'numeric' });
+    }
+
+    // Helper: Format Dates
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    // 2. Authentication Logic
+    let isSignUpMode = false;
+
+    function toggleAuthMode() {
+      isSignUpMode = !isSignUpMode;
+      const title = document.getElementById('auth-title');
+      const subtitle = document.getElementById('auth-subtitle');
+      const submitBtn = document.getElementById('btn-auth-submit');
+      const toggleBtn = document.getElementById('auth-toggle-btn');
+      const toggleText = document.getElementById('auth-toggle-text');
+      
+      if (isSignUpMode) {
+        title.innerText = 'Create Account';
+        subtitle.innerText = 'Sign up to start tracking your finances';
+        submitBtn.innerHTML = '<span>Sign Up</span><i data-lucide="user-plus"></i>';
+        toggleText.innerText = 'Already have an account? ';
+        toggleBtn.innerText = 'Sign In';
+      } else {
+        title.innerText = 'Sign In';
+        subtitle.innerText = 'Track your wealth in one unified console';
+        submitBtn.innerHTML = '<span>Sign In</span><i data-lucide="arrow-right"></i>';
+        toggleText.innerText = "Don't have an account? ";
+        toggleBtn.innerText = 'Sign Up';
+      }
+      lucide.createIcons();
+    }
+
+    async function handleAuthSubmit(e) {
+      e.preventDefault();
+      if (!state.supabase) {
+        showToast('Please configure Supabase settings first.', 'warning');
+        window.location.hash = '#settings';
+        return;
+      }
+      
+      const email = document.getElementById('auth-email').value;
+      const password = document.getElementById('auth-password').value;
+      const submitBtn = document.getElementById('btn-auth-submit');
+      
+      submitBtn.disabled = true;
+      submitBtn.style.opacity = '0.7';
+      
+      try {
+        if (isSignUpMode) {
+          const { data, error } = await state.supabase.auth.signUp({ email, password });
+          if (error) throw error;
+          showToast('Registration successful! Please check your email for confirmation.', 'success');
+          toggleAuthMode();
+        } else {
+          const { data, error } = await state.supabase.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+          showToast('Logged in successfully!', 'success');
+          window.location.hash = '#dashboard';
+        }
+      } catch (err) {
+        console.error(err);
+        showToast(err.message || 'Authentication failed', 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+      }
+    }
+
+    async function handleLogout() {
+      if (state.supabase) {
+        const { error } = await state.supabase.auth.signOut();
+        if (error) {
+          showToast('Error signing out.', 'error');
+        } else {
+          state.currentUser = null;
+          showToast('Logged out successfully.', 'info');
+          window.location.hash = '#login';
+        }
+      }
+    }
+
+    // 3. Routing Engine
+    function handleRoute() {
+      const hash = window.location.hash || '#dashboard';
+      
+      // Hide all section content
+      const sections = document.querySelectorAll('.page-section');
+      sections.forEach(s => s.classList.remove('active'));
+      
+      // Toggle sidebar items active status
+      const navItems = document.querySelectorAll('.nav-item');
+      navItems.forEach(item => item.classList.remove('active'));
+      
+      if (hash === '#login') {
+        document.getElementById('app-sidebar').style.display = 'none';
+        document.getElementById('app-main-content').style.marginLeft = '0';
+        document.getElementById('login').classList.add('active');
+        return;
+      }
+      
+      // Protected Route Check
+      if (!state.currentUser) {
+        window.location.hash = '#login';
+        return;
+      }
+      
+      // Show Sidebar
+      const sidebar = document.getElementById('app-sidebar');
+      sidebar.style.display = 'flex';
+      
+      const isMobile = window.innerWidth <= 768;
+      document.getElementById('app-main-content').style.marginLeft = isMobile ? '0' : '260px';
+      
+      const activeSectionId = hash.substring(1);
+      const targetSection = document.getElementById(activeSectionId);
+      
+      if (targetSection) {
+        targetSection.classList.add('active');
+        const navItem = document.getElementById(`nav-${activeSectionId}`);
+        if (navItem) navItem.classList.add('active');
+        triggerPageDataLoad(activeSectionId);
+      } else {
+        window.location.hash = '#dashboard';
+      }
+    }
+
+    // Switch Subtabs
+    window.switchSubTab = function(pageId, tabName) {
+      const contents = document.querySelectorAll(`#${pageId} .sub-tab-content`);
+      contents.forEach(content => content.classList.remove('active'));
+      
+      const targetContent = document.getElementById(`${pageId}-subtab-${tabName}`);
+      if (targetContent) targetContent.classList.add('active');
+      
+      const tabContainer = document.querySelector(`#${pageId} .tab-navigation`);
+      if (tabContainer) {
+        const buttons = tabContainer.querySelectorAll('.tab-btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        
+        let index = 0;
+        if (tabName === 'entry') index = 1;
+        if (tabName === 'history') index = 2;
+        if (buttons[index]) buttons[index].classList.add('active');
+      }
+      
+      if (tabName === 'dash' || tabName === 'history') {
+        triggerPageDataLoad(pageId);
+      }
+    };
+
+    function triggerPageDataLoad(pageId) {
+      if (pageId === 'dashboard') fetchDashboardData();
+      else if (pageId === 'yono') fetchYonoData();
+      else if (pageId === 'sip') fetchSipData();
+      else if (pageId === 'salary') fetchSalaryData();
+      else if (pageId === 'settings') loadSettingsData();
+    }
+
+    // 4. Data Sync Logic
+    // 4.1 YONO BANK
+    async function fetchYonoData() {
+      if (!state.supabase || !state.currentUser) return;
+      
+      try {
+        const { data, error } = await state.supabase
+          .from('yono_statements')
+          .select('*')
+          .eq('user_id', state.currentUser.id)
+          .order('date', { ascending: false });
+          
+        if (error) throw error;
+        state.yonoData = data || [];
+        renderYonoUI();
+      } catch (err) {
+        console.error(err);
+        showToast('Failed to fetch Yono bank records.', 'error');
+      }
+    }
+
+    function renderYonoUI() {
+      let totalCredits = 0;
+      let totalDebits = 0;
+      let currentBalance = 0;
+      
+      const chronologicalData = [...state.yonoData].sort((a, b) => new Date(a.date) - new Date(b.date));
+      chronologicalData.forEach(tx => {
+        const amt = parseFloat(tx.amount);
+        if (tx.transaction_type === 'credit') {
+          totalCredits += amt;
+          currentBalance += amt;
+        } else {
+          totalDebits += amt;
+          currentBalance -= amt;
+        }
+      });
+      
+      document.getElementById('yono-stat-balance').innerText = formatINR(currentBalance);
+      document.getElementById('yono-stat-credit').innerText = formatINR(totalCredits);
+      document.getElementById('yono-stat-debit').innerText = formatINR(totalDebits);
+      
+      renderYonoTable();
+      renderYonoCharts();
+    }
+
+    function renderYonoTable() {
+      const tbody = document.getElementById('yono-tbody');
+      const searchQuery = document.getElementById('yono-search').value.toLowerCase();
+      const categoryFilter = document.getElementById('yono-filter-category').value;
+      
+      const filtered = state.yonoData.filter(tx => {
+        const matchesSearch = tx.description.toLowerCase().includes(searchQuery);
+        const matchesCategory = categoryFilter === '' || tx.category === categoryFilter;
+        return matchesSearch && matchesCategory;
+      });
+      
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="empty-state">
+          <div class="empty-state-icon"><i data-lucide="info"></i></div>
+          <h3>No Records Found</h3>
+          <p>Try refining your search or add a new transaction.</p>
+        </td></tr>`;
+        lucide.createIcons();
+        return;
+      }
+      
+      tbody.innerHTML = filtered.map(tx => {
+        const isCredit = tx.transaction_type === 'credit';
+        const rowClass = isCredit ? 'pill-success' : 'pill-danger';
+        const amountPrefix = isCredit ? '+' : '-';
+        const balanceText = tx.balance !== null && tx.balance !== undefined ? formatINR(tx.balance) : '—';
+        
+        return `
+          <tr id="yono-row-${tx.id}">
+            <td>${formatDate(tx.date)}</td>
+            <td><span style="font-family: monospace; font-size: 0.85rem; color: var(--text-secondary);">${tx.ref_no || '—'}</span></td>
+            <td><strong>${tx.description}</strong></td>
+            <td><span class="pill pill-info">${tx.category || 'Others'}</span></td>
+            <td><span class="pill ${rowClass}">${tx.transaction_type}</span></td>
+            <td style="font-weight: 600; color: ${isCredit ? '#34d399' : '#f87171'}">${amountPrefix}${formatINR(tx.amount)}</td>
+            <td>${balanceText}</td>
+            <td>
+              <button class="btn btn-danger" style="padding: 0.35rem 0.5rem; font-size: 0.8rem;" onclick="deleteYonoRecord('${tx.id}')">
+                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    window.deleteYonoRecord = async function(id) {
+      if (!confirm('Are you sure you want to delete this bank transaction?')) return;
+      try {
+        const { error } = await state.supabase
+          .from('yono_statements')
+          .delete()
+          .eq('id', id);
+          
+        if (error) throw error;
+        showToast('Transaction deleted successfully.', 'success');
+        fetchYonoData();
+      } catch (err) {
+        showToast('Failed to delete transaction.', 'error');
+      }
+    };
+
+    function renderYonoCharts() {
+      const debitsCanvas = document.getElementById('chart-yono-categories');
+      const monthlyCanvas = document.getElementById('chart-yono-monthly');
+      
+      if (!debitsCanvas || !monthlyCanvas) return;
+      
+      if (state.activeCharts['yono-categories']) state.activeCharts['yono-categories'].destroy();
+      if (state.activeCharts['yono-monthly']) state.activeCharts['yono-monthly'].destroy();
+      
+      const catSums = {};
+      state.yonoData.filter(tx => tx.transaction_type === 'debit').forEach(tx => {
+        const cat = tx.category || 'Others';
+        catSums[cat] = (catSums[cat] || 0) + parseFloat(tx.amount);
+      });
+      
+      const catLabels = Object.keys(catSums);
+      const catValues = Object.values(catSums);
+      
+      state.activeCharts['yono-categories'] = new Chart(debitsCanvas, {
+        type: 'doughnut',
+        data: {
+          labels: catLabels,
+          datasets: [{
+            data: catValues,
+            backgroundColor: [
+              '#6366f1', '#10b981', '#ef4444', '#f59e0b', '#3b82f6', 
+              '#ec4899', '#8b5cf6', '#14b8a6', '#f43f5e', '#6b7280'
+            ],
+            borderWidth: 1,
+            borderColor: 'rgba(255, 255, 255, 0.05)'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { color: '#e5e7eb', font: { family: 'Outfit' } }
+            }
+          }
+        }
+      });
+      
+      const monthlyData = {};
+      state.yonoData.forEach(tx => {
+        const monthKey = tx.date.substring(0, 7);
+        if (!monthlyData[monthKey]) {
+          monthlyData[monthKey] = { credit: 0, debit: 0 };
+        }
+        const amt = parseFloat(tx.amount);
+        if (tx.transaction_type === 'credit') {
+          monthlyData[monthKey].credit += amt;
+        } else {
+          monthlyData[monthKey].debit += amt;
+        }
+      });
+      
+      const sortedMonths = Object.keys(monthlyData).sort();
+      const credits = sortedMonths.map(m => monthlyData[m].credit);
+      const debits = sortedMonths.map(m => monthlyData[m].debit);
+      
+      state.activeCharts['yono-monthly'] = new Chart(monthlyCanvas, {
+        type: 'bar',
+        data: {
+          labels: sortedMonths.map(formatMonthYear),
+          datasets: [
+            {
+              label: 'Credits',
+              data: credits,
+              backgroundColor: 'rgba(16, 185, 129, 0.75)',
+              borderRadius: 6
+            },
+            {
+              label: 'Debits',
+              data: debits,
+              backgroundColor: 'rgba(239, 68, 68, 0.75)',
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#9ca3af', font: { family: 'Outfit' } } },
+            y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#9ca3af', font: { family: 'Outfit' } } }
+          },
+          plugins: {
+            legend: { labels: { color: '#e5e7eb', font: { family: 'Outfit' } } }
+          }
+        }
+      });
+    }
+
+    async function handleYonoSubmit(e) {
+      e.preventDefault();
+      if (!state.supabase || !state.currentUser) return;
+      
+      const date = document.getElementById('yono-date').value;
+      const description = document.getElementById('yono-desc').value;
+      const ref_no = document.getElementById('yono-ref').value;
+      const amount = parseFloat(document.getElementById('yono-amount').value);
+      const transaction_type = document.getElementById('yono-type').value;
+      const category = document.getElementById('yono-category').value;
+      let balance = document.getElementById('yono-balance').value;
+      
+      if (isNaN(amount) || amount <= 0) {
+        showToast('Invalid transaction amount.', 'warning');
+        return;
+      }
+      
+      if (balance === '') {
+        let currentBal = 0;
+        const chronologicalData = [...state.yonoData].sort((a, b) => new Date(a.date) - new Date(b.date));
+        if (chronologicalData.length > 0) {
+          const lastTx = chronologicalData[chronologicalData.length - 1];
+          currentBal = parseFloat(lastTx.balance || 0);
+        }
+        
+        if (transaction_type === 'credit') {
+          balance = currentBal + amount;
+        } else {
+          balance = currentBal - amount;
+        }
+      } else {
+        balance = parseFloat(balance);
+      }
+      
+      const form = document.getElementById('yono-form');
+      const btn = form.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      btn.innerText = 'Saving...';
+      
+      try {
+        const { error } = await state.supabase
+          .from('yono_statements')
+          .insert({
+            user_id: state.currentUser.id,
+            date,
+            description,
+            ref_no: ref_no || null,
+            amount,
+            transaction_type,
+            balance,
+            category
+          });
+          
+        if (error) throw error;
+        showToast('Transaction saved successfully!', 'success');
+        form.reset();
+        switchSubTab('yono', 'history');
+        fetchYonoData();
+      } catch (err) {
+        console.error(err);
+        showToast(err.message || 'Failed to save transaction', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Save Transaction';
+      }
+    }
+
+    // 4.2 SIP STATEMENT
+    async function fetchSipData() {
+      if (!state.supabase || !state.currentUser) return;
+      
+      try {
+        const { data, error } = await state.supabase
+          .from('sip_statements')
+          .select('*')
+          .eq('user_id', state.currentUser.id)
+          .order('date', { ascending: false });
+          
+        if (error) throw error;
+        state.sipData = data || [];
+        renderSipUI();
+      } catch (err) {
+        console.error(err);
+        showToast('Failed to fetch SIP records.', 'error');
+      }
+    }
+
+    function renderSipUI() {
+      let totalInvested = 0;
+      let totalUnits = 0;
+      const uniqueSchemes = new Set();
+      
+      state.sipData.forEach(entry => {
+        const amt = parseFloat(entry.amount);
+        const unts = parseFloat(entry.units || 0);
+        uniqueSchemes.add(entry.scheme_name);
+        
+        if (entry.transaction_type === 'buy') {
+          totalInvested += amt;
+          totalUnits += unts;
+        } else {
+          totalInvested -= amt;
+          totalUnits -= unts;
+        }
+      });
+      
+      document.getElementById('sip-stat-invested').innerText = formatINR(totalInvested);
+      document.getElementById('sip-stat-schemes').innerText = uniqueSchemes.size;
+      document.getElementById('sip-stat-units').innerText = totalUnits.toFixed(4);
+      
+      renderSipTable();
+      renderSipCharts();
+    }
+
+    function renderSipTable() {
+      const tbody = document.getElementById('sip-tbody');
+      const searchQuery = document.getElementById('sip-search').value.toLowerCase();
+      
+      const filtered = state.sipData.filter(entry => {
+        return entry.scheme_name.toLowerCase().includes(searchQuery);
+      });
+      
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="empty-state">
+          <div class="empty-state-icon"><i data-lucide="info"></i></div>
+          <h3>No SIP Logs Found</h3>
+          <p>Record your mutual fund investments using the entry sheet tab.</p>
+        </td></tr>`;
+        lucide.createIcons();
+        return;
+      }
+      
+      tbody.innerHTML = filtered.map(entry => {
+        const isBuy = entry.transaction_type === 'buy';
+        const pillClass = isBuy ? 'pill-success' : 'pill-danger';
+        const displayUnits = entry.units !== null ? parseFloat(entry.units).toFixed(4) : '—';
+        const displayNAV = entry.nav !== null ? parseFloat(entry.nav).toFixed(4) : '—';
+        
+        return `
+          <tr id="sip-row-${entry.id}">
+            <td>${formatDate(entry.date)}</td>
+            <td><strong>${entry.scheme_name}</strong></td>
+            <td><span class="pill ${pillClass}">${entry.transaction_type}</span></td>
+            <td>₹${displayNAV}</td>
+            <td>${displayUnits}</td>
+            <td style="font-weight: 600; color: ${isBuy ? '#34d399' : '#f87171'}">${isBuy ? '+' : '-'}${formatINR(entry.amount)}</td>
+            <td>
+              <button class="btn btn-danger" style="padding: 0.35rem 0.5rem; font-size: 0.8rem;" onclick="deleteSipRecord('${entry.id}')">
+                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    window.deleteSipRecord = async function(id) {
+      if (!confirm('Are you sure you want to delete this SIP entry?')) return;
+      try {
+        const { error } = await state.supabase
+          .from('sip_statements')
+          .delete()
+          .eq('id', id);
+          
+        if (error) throw error;
+        showToast('SIP entry deleted successfully.', 'success');
+        fetchSipData();
+      } catch (err) {
+        showToast('Failed to delete SIP record.', 'error');
+      }
+    };
+
+    function renderSipCharts() {
+      const canvas = document.getElementById('chart-sip-distribution');
+      if (!canvas) return;
+      
+      if (state.activeCharts['sip-distribution']) state.activeCharts['sip-distribution'].destroy();
+      
+      const schemeSums = {};
+      state.sipData.forEach(entry => {
+        const amt = parseFloat(entry.amount);
+        if (entry.transaction_type === 'buy') {
+          schemeSums[entry.scheme_name] = (schemeSums[entry.scheme_name] || 0) + amt;
+        } else {
+          schemeSums[entry.scheme_name] = (schemeSums[entry.scheme_name] || 0) - amt;
+        }
+      });
+      
+      const labels = Object.keys(schemeSums).filter(k => schemeSums[k] > 0);
+      const values = labels.map(k => schemeSums[k]);
+      
+      if (labels.length === 0) return;
+      
+      state.activeCharts['sip-distribution'] = new Chart(canvas, {
+        type: 'pie',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: values,
+            backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899', '#f43f5e', '#14b8a6'],
+            borderWidth: 1,
+            borderColor: 'rgba(255, 255, 255, 0.05)'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { color: '#e5e7eb', font: { family: 'Outfit' } }
+            }
+          }
+        }
+      });
+    }
+
+    async function handleSipSubmit(e) {
+      e.preventDefault();
+      if (!state.supabase || !state.currentUser) return;
+      
+      const date = document.getElementById('sip-date').value;
+      const scheme_name = document.getElementById('sip-scheme').value;
+      const transaction_type = document.getElementById('sip-action').value;
+      const amount = parseFloat(document.getElementById('sip-amount').value);
+      let nav = document.getElementById('sip-nav').value;
+      let units = document.getElementById('sip-units').value;
+      
+      if (isNaN(amount) || amount <= 0) {
+        showToast('Invalid investment amount.', 'warning');
+        return;
+      }
+      
+      if (nav !== '' && units === '') {
+        nav = parseFloat(nav);
+        units = amount / nav;
+      } else if (units !== '' && nav === '') {
+        units = parseFloat(units);
+        nav = amount / units;
+      } else {
+        nav = nav !== '' ? parseFloat(nav) : null;
+        units = units !== '' ? parseFloat(units) : null;
+      }
+      
+      const form = document.getElementById('sip-form');
+      const btn = form.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      
+      try {
+        const { error } = await state.supabase
+          .from('sip_statements')
+          .insert({
+            user_id: state.currentUser.id,
+            date,
+            scheme_name,
+            amount,
+            units,
+            nav,
+            transaction_type
+          });
+          
+        if (error) throw error;
+        showToast('SIP entry logged successfully!', 'success');
+        form.reset();
+        switchSubTab('sip', 'history');
+        fetchSipData();
+      } catch (err) {
+        console.error(err);
+        showToast(err.message || 'Failed to save SIP entry', 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // 4.3 SALARY
+    async function fetchSalaryData() {
+      if (!state.supabase || !state.currentUser) return;
+      
+      try {
+        const { data, error } = await state.supabase
+          .from('salary_accounts')
+          .select('*')
+          .eq('user_id', state.currentUser.id)
+          .order('month_year', { ascending: true });
+          
+        if (error) throw error;
+        state.salaryData = data || [];
+        renderSalaryUI();
+      } catch (err) {
+        console.error(err);
+        showToast('Failed to fetch salary ledger.', 'error');
+      }
+    }
+
+    function renderSalaryUI() {
+      let totalNetIncome = 0;
+      let totalDeductions = 0;
+      let creditedCount = 0;
+      
+      state.salaryData.forEach(record => {
+        if (record.status === 'credited') {
+          totalNetIncome += parseFloat(record.net_salary);
+          creditedCount++;
+        }
+        totalDeductions += parseFloat(record.deductions || 0);
+      });
+      
+      const avgSalary = creditedCount > 0 ? (totalNetIncome / creditedCount) : 0;
+      
+      document.getElementById('sal-stat-net-income').innerText = formatINR(totalNetIncome);
+      document.getElementById('sal-stat-avg-net').innerText = formatINR(avgSalary);
+      document.getElementById('sal-stat-deductions').innerText = formatINR(totalDeductions);
+      
+      renderSalaryTable();
+      renderSalaryCharts();
+    }
+
+    function renderSalaryTable() {
+      const tbody = document.getElementById('salary-tbody');
+      
+      if (state.salaryData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="empty-state">
+          <div class="empty-state-icon"><i data-lucide="info"></i></div>
+          <h3>No Salary Slip Recorded</h3>
+          <p>Log your salaries and allowances using the entry form.</p>
+        </td></tr>`;
+        lucide.createIcons();
+        return;
+      }
+      
+      const displayData = [...state.salaryData].sort((a, b) => b.month_year.localeCompare(a.month_year));
+      
+      tbody.innerHTML = displayData.map(record => {
+        const isCredited = record.status === 'credited';
+        const pillClass = isCredited ? 'pill-success' : 'pill-warning';
+        
+        return `
+          <tr id="sal-row-${record.id}">
+            <td><strong>${formatMonthYear(record.month_year)}</strong></td>
+            <td>${formatDate(record.credited_date)}</td>
+            <td>${formatINR(record.base_salary)}</td>
+            <td>${formatINR(record.allowances)}</td>
+            <td style="color: #f87171;">-${formatINR(record.deductions)}</td>
+            <td style="font-weight: 600; color: #34d399;">${formatINR(record.net_salary)}</td>
+            <td><span class="pill ${pillClass}">${record.status}</span></td>
+            <td>
+              <button class="btn btn-danger" style="padding: 0.35rem 0.5rem; font-size: 0.8rem;" onclick="deleteSalaryRecord('${record.id}')">
+                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    window.deleteSalaryRecord = async function(id) {
+      if (!confirm('Are you sure you want to delete this salary record?')) return;
+      try {
+        const { error } = await state.supabase
+          .from('salary_accounts')
+          .delete()
+          .eq('id', id);
+          
+        if (error) throw error;
+        showToast('Salary record deleted successfully.', 'success');
+        fetchSalaryData();
+      } catch (err) {
+        showToast('Failed to delete salary record.', 'error');
+      }
+    };
+
+    function renderSalaryCharts() {
+      const canvas = document.getElementById('chart-salary-trend');
+      if (!canvas) return;
+      
+      if (state.activeCharts['salary-trend']) state.activeCharts['salary-trend'].destroy();
+      
+      const labels = state.salaryData.map(r => formatMonthYear(r.month_year));
+      const netSalaries = state.salaryData.map(r => parseFloat(r.net_salary));
+      
+      if (labels.length === 0) return;
+      
+      state.activeCharts['salary-trend'] = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Net Monthly Income (₹)',
+            data: netSalaries,
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            tension: 0.2,
+            fill: true,
+            borderWidth: 2,
+            pointBackgroundColor: '#10b981'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#9ca3af', font: { family: 'Outfit' } } },
+            y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#9ca3af', font: { family: 'Outfit' } } }
+          },
+          plugins: {
+            legend: { labels: { color: '#e5e7eb', font: { family: 'Outfit' } } }
+          }
+        }
+      });
+    }
+
+    async function handleSalarySubmit(e) {
+      e.preventDefault();
+      if (!state.supabase || !state.currentUser) return;
+      
+      const month_year = document.getElementById('sal-month').value;
+      const credited_date = document.getElementById('sal-date').value;
+      const base_salary = parseFloat(document.getElementById('sal-base').value);
+      const allowances = parseFloat(document.getElementById('sal-allowance').value) || 0;
+      const deductions = parseFloat(document.getElementById('sal-deductions').value) || 0;
+      const status = document.getElementById('sal-status').value;
+      
+      if (isNaN(base_salary) || base_salary < 0) {
+        showToast('Invalid base salary amount.', 'warning');
+        return;
+      }
+      
+      const net_salary = base_salary + allowances - deductions;
+      const form = document.getElementById('salary-form');
+      const btn = form.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      
+      try {
+        const { error } = await state.supabase
+          .from('salary_accounts')
+          .upsert({
+            user_id: state.currentUser.id,
+            month_year,
+            base_salary,
+            allowances,
+            deductions,
+            net_salary,
+            credited_date,
+            status
+          });
+          
+        if (error) throw error;
+        showToast('Salary details logged successfully!', 'success');
+        form.reset();
+        document.getElementById('sal-allowance').value = '0.00';
+        document.getElementById('sal-deductions').value = '0.00';
+        switchSubTab('salary', 'history');
+        fetchSalaryData();
+      } catch (err) {
+        console.error(err);
+        showToast(err.message || 'Failed to save salary details', 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // 4.4 DASHBOARD SNAPSHOT
+    async function fetchDashboardData() {
+      if (!state.supabase || !state.currentUser) return;
+      
+      try {
+        const [yonoRes, sipRes, salaryRes] = await Promise.all([
+          state.supabase.from('yono_statements').select('*').eq('user_id', state.currentUser.id).order('date', { ascending: false }),
+          state.supabase.from('sip_statements').select('*').eq('user_id', state.currentUser.id).order('date', { ascending: false }),
+          state.supabase.from('salary_accounts').select('*').eq('user_id', state.currentUser.id).order('month_year', { ascending: false })
+        ]);
+        
+        if (yonoRes.error) throw yonoRes.error;
+        if (sipRes.error) throw sipRes.error;
+        if (salaryRes.error) throw salaryRes.error;
+        
+        state.yonoData = yonoRes.data || [];
+        state.sipData = sipRes.data || [];
+        state.salaryData = salaryRes.data || [];
+        
+        renderDashboardUI();
+      } catch (err) {
+        console.error(err);
+        showToast('Failed to load dashboard parameters.', 'error');
+      }
+    }
+
+    function renderDashboardUI() {
+      let bankBalance = 0;
+      const chronologicalYono = [...state.yonoData].sort((a, b) => new Date(a.date) - new Date(b.date));
+      if (chronologicalYono.length > 0) {
+        const latestTx = chronologicalYono[chronologicalYono.length - 1];
+        bankBalance = parseFloat(latestTx.balance !== null ? latestTx.balance : 0);
+      }
+      
+      let netSalaryVal = 0;
+      let salaryMonthText = 'No salary records';
+      const creditedSalaries = state.salaryData.filter(s => s.status === 'credited');
+      if (creditedSalaries.length > 0) {
+        netSalaryVal = parseFloat(creditedSalaries[0].net_salary);
+        salaryMonthText = `Salary: ${formatMonthYear(creditedSalaries[0].month_year)}`;
+      }
+      
+      let sipInvested = 0;
+      state.sipData.forEach(s => {
+        const amt = parseFloat(s.amount);
+        if (s.transaction_type === 'buy') sipInvested += amt;
+        else sipInvested -= amt;
+      });
+      
+      document.getElementById('dash-bank-balance').innerText = formatINR(bankBalance);
+      document.getElementById('dash-net-salary').innerText = formatINR(netSalaryVal);
+      document.getElementById('dash-salary-month').innerText = salaryMonthText;
+      document.getElementById('dash-sip-invested').innerText = formatINR(sipInvested);
+      
+      const combinedTxs = [];
+      state.yonoData.slice(0, 10).forEach(y => {
+        combinedTxs.push({
+          date: y.date,
+          source: 'Yono Bank',
+          description: y.description,
+          type: y.transaction_type,
+          amount: parseFloat(y.amount),
+          sortDate: new Date(y.date)
+        });
+      });
+      
+      state.sipData.slice(0, 10).forEach(s => {
+        combinedTxs.push({
+          date: s.date,
+          source: 'SIP Portfolio',
+          description: s.scheme_name,
+          type: s.transaction_type === 'buy' ? 'debit' : 'credit',
+          amount: parseFloat(s.amount),
+          sortDate: new Date(s.date)
+        });
+      });
+      
+      state.salaryData.slice(0, 10).forEach(sal => {
+        if (sal.status === 'credited') {
+          combinedTxs.push({
+            date: sal.credited_date,
+            source: 'Salary Account',
+            description: `Salary Credited - ${formatMonthYear(sal.month_year)}`,
+            type: 'credit',
+            amount: parseFloat(sal.net_salary),
+            sortDate: new Date(sal.credited_date)
+          });
+        }
+      });
+      
+      combinedTxs.sort((a, b) => b.sortDate - a.sortDate);
+      const recent = combinedTxs.slice(0, 8);
+      
+      const tbody = document.getElementById('dash-recent-tbody');
+      if (recent.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">No recent activities logged.</td></tr>`;
+      } else {
+        tbody.innerHTML = recent.map(tx => {
+          const isCredit = tx.type === 'credit';
+          const rowClass = isCredit ? 'pill-success' : 'pill-danger';
+          
+          return `
+            <tr>
+              <td>${formatDate(tx.date)}</td>
+              <td><span class="pill pill-info">${tx.source}</span></td>
+              <td><strong>${tx.description}</strong></td>
+              <td><span class="pill ${rowClass}">${tx.type}</span></td>
+              <td style="font-weight: 600; color: ${isCredit ? '#34d399' : '#f87171'}">${isCredit ? '+' : '-'}${formatINR(tx.amount)}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+      
+      renderDashboardCharts(bankBalance, sipInvested);
+    }
+
+    function renderDashboardCharts(bankBalance, sipInvested) {
+      const flowCanvas = document.getElementById('chart-dash-cashflow');
+      const assetCanvas = document.getElementById('chart-dash-investments');
+      
+      if (!flowCanvas || !assetCanvas) return;
+      
+      if (state.activeCharts['dash-cashflow']) state.activeCharts['dash-cashflow'].destroy();
+      if (state.activeCharts['dash-investments']) state.activeCharts['dash-investments'].destroy();
+      
+      const monthlyData = {};
+      state.yonoData.forEach(tx => {
+        const monthKey = tx.date.substring(0, 7);
+        if (!monthlyData[monthKey]) monthlyData[monthKey] = { credit: 0, debit: 0 };
+        const amt = parseFloat(tx.amount);
+        if (tx.transaction_type === 'credit') monthlyData[monthKey].credit += amt;
+        else monthlyData[monthKey].debit += amt;
+      });
+      
+      state.salaryData.forEach(sal => {
+        if (sal.status === 'credited') {
+          const monthKey = sal.credited_date.substring(0, 7);
+          if (!monthlyData[monthKey]) monthlyData[monthKey] = { credit: 0, debit: 0 };
+          monthlyData[monthKey].credit += parseFloat(sal.net_salary);
+          monthlyData[monthKey].debit += parseFloat(sal.deductions || 0);
+        }
+      });
+      
+      const sortedMonths = Object.keys(monthlyData).sort().slice(-6);
+      const credits = sortedMonths.map(m => monthlyData[m].credit);
+      const debits = sortedMonths.map(m => monthlyData[m].debit);
+      
+      state.activeCharts['dash-cashflow'] = new Chart(flowCanvas, {
+        type: 'line',
+        data: {
+          labels: sortedMonths.map(formatMonthYear),
+          datasets: [
+            {
+              label: 'Total Inflow (Credits)',
+              data: credits,
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.08)',
+              fill: true,
+              tension: 0.25,
+              borderWidth: 2
+            },
+            {
+              label: 'Total Outflow (Debits)',
+              data: debits,
+              borderColor: '#ef4444',
+              backgroundColor: 'rgba(239, 68, 68, 0.08)',
+              fill: true,
+              tension: 0.25,
+              borderWidth: 2
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#9ca3af', font: { family: 'Outfit' } } },
+            y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#9ca3af', font: { family: 'Outfit' } } }
+          },
+          plugins: {
+            legend: { labels: { color: '#e5e7eb', font: { family: 'Outfit' } } }
+          }
+        }
+      });
+      
+      const assetLabels = ['Bank Balance', 'SIP Investments'];
+      const assetValues = [bankBalance >= 0 ? bankBalance : 0, sipInvested];
+      
+      state.activeCharts['dash-investments'] = new Chart(assetCanvas, {
+        type: 'doughnut',
+        data: {
+          labels: assetLabels,
+          datasets: [{
+            data: assetValues,
+            backgroundColor: ['#6366f1', '#f59e0b'],
+            borderWidth: 1,
+            borderColor: 'rgba(255, 255, 255, 0.05)'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: '#e5e7eb', font: { family: 'Outfit' } }
+            }
+          }
+        }
+      });
+    }
+
+    // 5. Settings management
+    function loadSettingsData() {
+      document.getElementById('settings-sb-url').value = state.supabaseUrl;
+      document.getElementById('settings-sb-key').value = state.supabaseAnonKey;
+      const sqlPreview = document.getElementById('sql-preview');
+      if (sqlPreview) {
+        sqlPreview.textContent = sqlSchemaText;
+      }
+    }
+
+    function handleSettingsSubmit(e) {
+      e.preventDefault();
+      const url = document.getElementById('settings-sb-url').value.trim();
+      const key = document.getElementById('settings-sb-key').value.trim();
+      
+      localStorage.setItem('finance_sb_url', url);
+      localStorage.setItem('finance_sb_key', key);
+      
+      state.supabaseUrl = url;
+      state.supabaseAnonKey = key;
+      
+      if (initSupabase()) {
+        showToast('Supabase credentials saved successfully!', 'success');
+        checkUserSession().then(() => {
+          if (state.currentUser) {
+            window.location.hash = '#dashboard';
+          } else {
+            window.location.hash = '#login';
+          }
+        });
+      }
+    }
+
+    async function testConnection() {
+      const url = document.getElementById('settings-sb-url').value.trim();
+      const key = document.getElementById('settings-sb-key').value.trim();
+      
+      if (!url || !key) {
+        showToast('Enter URL and Anon Key to test.', 'warning');
+        return;
+      }
+      
+      const testBtn = document.getElementById('btn-test-connection');
+      testBtn.disabled = true;
+      testBtn.innerHTML = 'Testing...';
+      
+      try {
+        const client = supabase.createClient(url, key);
+        const { error } = await client.auth.getSession();
+        if (error) throw error;
+        showToast('Successfully connected to Supabase!', 'success');
+      } catch (err) {
+        console.error(err);
+        showToast(`Connection failed: ${err.message || 'Check credentials'}`, 'error');
+      } finally {
+        testBtn.disabled = false;
+        testBtn.innerHTML = '<i data-lucide="wifi"></i><span>Test Connect</span>';
+        lucide.createIcons();
+      }
+    }
+
+    function copySQLScript() {
+      navigator.clipboard.writeText(sqlSchemaText)
+        .then(() => showToast('SQL setup script copied to clipboard!', 'success'))
+        .catch(() => showToast('Failed to copy. Copy manually.', 'error'));
+    }
+
+    // 6. User Session Validation Check
+    async function checkUserSession() {
+      if (!state.supabase) return;
+      
+      try {
+        const { data: { session }, error } = await state.supabase.auth.getSession();
+        if (error) throw error;
+        
+        if (session) {
+          state.currentUser = session.user;
+          document.getElementById('profile-name').innerText = state.currentUser.email.split('@')[0];
+          document.getElementById('profile-email').innerText = state.currentUser.email;
+          document.getElementById('profile-avatar').innerText = state.currentUser.email.substring(0, 2).toUpperCase();
+          const welcome = document.getElementById('dashboard-welcome');
+          if (welcome) welcome.innerText = `Welcome Back, ${state.currentUser.email.split('@')[0]}!`;
+        } else {
+          state.currentUser = null;
+        }
+      } catch (err) {
+        console.error(err);
+        state.currentUser = null;
+      }
+    }
+
+    // 7. Event Listeners & Initialize
+    document.addEventListener('DOMContentLoaded', async () => {
+      lucide.createIcons();
+      initSupabase();
+      
+      if (state.supabase) {
+        await checkUserSession();
+        state.supabase.auth.onAuthStateChange(async (event, session) => {
+          if (session) {
+            state.currentUser = session.user;
+            document.getElementById('profile-name').innerText = state.currentUser.email.split('@')[0];
+            document.getElementById('profile-email').innerText = state.currentUser.email;
+            document.getElementById('profile-avatar').innerText = state.currentUser.email.substring(0, 2).toUpperCase();
+            const welcome = document.getElementById('dashboard-welcome');
+            if (welcome) welcome.innerText = `Welcome Back, ${state.currentUser.email.split('@')[0]}!`;
+            
+            if (window.location.hash === '#login' || window.location.hash === '') {
+              window.location.hash = '#dashboard';
+            } else {
+              handleRoute();
+            }
+          } else {
+            state.currentUser = null;
+            window.location.hash = '#login';
+          }
+        });
+      }
+      
+      const today = new Date().toISOString().substring(0, 10);
+      const currentMonth = new Date().toISOString().substring(0, 7);
+      
+      if (document.getElementById('yono-date')) document.getElementById('yono-date').value = today;
+      if (document.getElementById('sip-date')) document.getElementById('sip-date').value = today;
+      if (document.getElementById('sal-date')) document.getElementById('sal-date').value = today;
+      if (document.getElementById('sal-month')) document.getElementById('sal-month').value = currentMonth;
+      
+      document.getElementById('auth-form').addEventListener('submit', handleAuthSubmit);
+      document.getElementById('auth-toggle-btn').addEventListener('click', toggleAuthMode);
+      document.getElementById('btn-logout').addEventListener('click', handleLogout);
+      document.getElementById('yono-form').addEventListener('submit', handleYonoSubmit);
+      document.getElementById('sip-form').addEventListener('submit', handleSipSubmit);
+      document.getElementById('salary-form').addEventListener('submit', handleSalarySubmit);
+      document.getElementById('settings-db-form').addEventListener('submit', handleSettingsSubmit);
+      document.getElementById('btn-test-connection').addEventListener('click', testConnection);
+      document.getElementById('btn-copy-sql').addEventListener('click', copySQLScript);
+      
+      document.getElementById('yono-search').addEventListener('input', renderYonoTable);
+      document.getElementById('yono-filter-category').addEventListener('change', renderYonoTable);
+      document.getElementById('sip-search').addEventListener('input', renderSipTable);
+      
+      window.addEventListener('hashchange', handleRoute);
+      handleRoute();
+    });
+  </script>
+</body>
+</html>
