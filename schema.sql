@@ -1,17 +1,24 @@
 -- Enable UUID extension if not already enabled
 create extension if not exists "uuid-ossp";
 
+-- Drop existing tables to avoid policy conflicts and apply fresh schema
+drop table if exists public.yono_statements cascade;
+drop table if exists public.sip_statements cascade;
+drop table if exists public.salary_accounts cascade;
+
 -- Create tables
 create table if not exists public.yono_statements (
     id uuid default gen_random_uuid() primary key,
     user_id uuid references auth.users(id) on delete cascade not null,
     date date not null,
-    description text not null,
-    ref_no text,
-    amount numeric(12, 2) not null,
-    transaction_type text check (transaction_type in ('credit', 'debit')) not null,
+    cretarias text,
+    purpose text,
+    person text,
+    details text,
+    debit numeric(12, 2) default 0.00,
+    credit numeric(12, 2) default 0.00,
     balance numeric(12, 2),
-    category text default 'Uncategorized',
+    ref_no text,
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
