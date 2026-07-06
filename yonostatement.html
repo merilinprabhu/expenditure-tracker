@@ -1541,21 +1541,15 @@
               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; align-items: center;">
                 <div class="form-group" style="margin-bottom: 0;">
                   <label style="font-size: 0.75rem;">Default Cretarias</label>
-                  <select id="default-import-cretarias" class="form-control" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onchange="applyImportDefaults()">
-                    <!-- Populated dynamically -->
-                  </select>
+                  <input type="text" id="default-import-cretarias" class="form-control" list="yono-cretarias-datalist" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" placeholder="Select or type..." oninput="updateImportDefaultPurposeOptions(this.value); applyImportDefaults()">
                 </div>
                 <div class="form-group" style="margin-bottom: 0;">
                   <label style="font-size: 0.75rem;">Default Purpose</label>
-                  <select id="default-import-purpose" class="form-control" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onchange="applyImportDefaults()">
-                    <!-- Populated dynamically -->
-                  </select>
+                  <input type="text" id="default-import-purpose" class="form-control" list="default-import-purpose-datalist" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" placeholder="Select or type..." onchange="applyImportDefaults()">
                 </div>
                 <div class="form-group" style="margin-bottom: 0;">
                   <label style="font-size: 0.75rem;">Default Person</label>
-                  <select id="default-import-person" class="form-control" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onchange="applyImportDefaults()">
-                    <!-- Populated dynamically -->
-                  </select>
+                  <input type="text" id="default-import-person" class="form-control" list="yono-person-datalist" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" placeholder="Select or type..." onchange="applyImportDefaults()">
                 </div>
               </div>
             </div>
@@ -1615,21 +1609,19 @@
                 </div>
                 <div style="flex: 1.2; min-width: 120px;">
                   <label style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Cretarias</label>
-                  <select id="yono-cretarias" class="form-control" style="padding: 0.35rem 0.5rem; font-size: 0.8rem;">
-                    <!-- Populated dynamically -->
-                  </select>
+                  <input type="text" id="yono-cretarias" class="form-control" list="yono-cretarias-datalist" style="padding: 0.35rem 0.5rem; font-size: 0.8rem;" placeholder="Select or type..." oninput="updateFormPurposeOptions(this.value)">
                 </div>
                 <div style="flex: 1.2; min-width: 120px;">
                   <label style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Purpose</label>
-                  <select id="yono-purpose" class="form-control" style="padding: 0.35rem 0.5rem; font-size: 0.8rem;">
-                    <!-- Populated dynamically -->
-                  </select>
+                  <input type="text" id="yono-purpose" class="form-control" list="yono-purpose-datalist" style="padding: 0.35rem 0.5rem; font-size: 0.8rem;" placeholder="Select or type...">
                 </div>
-                <div style="flex: 1.2; min-width: 120px;">
+                <div style="flex: 1.5; min-width: 175px;">
                   <label style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Person</label>
-                  <select id="yono-person" class="form-control" style="padding: 0.35rem 0.5rem; font-size: 0.8rem;">
-                    <!-- Populated dynamically -->
-                  </select>
+                  <div style="display: flex; gap: 0.25rem; align-items: center;">
+                    <input type="text" id="yono-person" class="form-control" list="yono-person-datalist" style="padding: 0.35rem 0.5rem; font-size: 0.8rem; flex: 1;" placeholder="Select or type...">
+                    <button type="button" class="btn" style="padding: 0.35rem 0.5rem; font-size: 0.8rem; background: rgba(52, 211, 153, 0.15); border: 1px solid rgba(52, 211, 153, 0.3); color: #34d399; font-weight: bold; border-radius: 4px; cursor: pointer; line-height: 1;" onclick="quickAddPersonFromForm()" title="Add to list">+</button>
+                    <button type="button" class="btn" style="padding: 0.35rem 0.5rem; font-size: 0.8rem; background: rgba(248, 113, 113, 0.15); border: 1px solid rgba(248, 113, 113, 0.3); color: #f87171; font-weight: bold; border-radius: 4px; cursor: pointer; line-height: 1;" onclick="quickDeletePersonFromForm()" title="Delete from list">&times;</button>
+                  </div>
                 </div>
                 <div style="flex: 1.5; min-width: 140px;">
                   <label style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Brief (Writes)</label>
@@ -1819,7 +1811,18 @@
                 <!-- Filled dynamically by JavaScript -->
               </div>
             </div>
-            
+            <!-- Duplicate Warning Banner Container -->
+            <div id="yono-duplicate-banner" class="glass-card" style="display: none; margin-bottom: 1rem; padding: 0.75rem 1.25rem; border-radius: 8px; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--accent-warning);">
+                <i data-lucide="alert-triangle" style="width: 18px; height: 18px; color: var(--accent-warning);"></i>
+                <span id="yono-duplicate-text">We found duplicate entries.</span>
+              </div>
+              <button class="btn" onclick="cleanupYonoDuplicates()" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; color: black; font-weight: 600; background: var(--accent-warning);">
+                <i data-lucide="sparkles" style="width: 13px; height: 13px;"></i>
+                <span>Clean Up Duplicates</span>
+              </button>
+            </div>
+
             <div class="table-container">
               <table>
                 <thead>
@@ -2061,6 +2064,11 @@
           </div>
         </div>
       </section>
+      <!-- Global Datalists for autocompleting and writing Criteria, Purpose, and Person -->
+      <datalist id="yono-cretarias-datalist"></datalist>
+      <datalist id="yono-purpose-datalist"></datalist>
+      <datalist id="default-import-purpose-datalist"></datalist>
+      <datalist id="yono-person-datalist"></datalist>
 
     </main>
   </div>
@@ -2457,11 +2465,101 @@ create policy "Users can delete their own pli records" on public.pli_records for
         if (error) throw error;
         state.yonoData = data || [];
         renderYonoUI();
+        detectYonoDuplicates();
       } catch (err) {
         console.error(err);
         showToast('Failed to fetch Yono bank records.', 'error');
       }
     }
+
+    function detectYonoDuplicates() {
+      const banner = document.getElementById('yono-duplicate-banner');
+      const text = document.getElementById('yono-duplicate-text');
+      if (!banner || !text) return;
+      
+      const seen = {};
+      const duplicates = [];
+      
+      state.yonoData.forEach(tx => {
+        if (!tx.date || tx.balance === null || tx.balance === undefined) return;
+        const key = `${tx.date}_${parseFloat(tx.balance).toFixed(2)}_${parseFloat(tx.debit || 0).toFixed(2)}_${parseFloat(tx.credit || 0).toFixed(2)}`;
+        if (seen[key]) {
+          seen[key].push(tx);
+          duplicates.push(tx);
+        } else {
+          seen[key] = [tx];
+        }
+      });
+      
+      if (duplicates.length > 0) {
+        banner.style.display = 'flex';
+        text.innerText = `We detected ${duplicates.length} duplicate transactions on identical dates with identical balances and amounts.`;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+      } else {
+        banner.style.display = 'none';
+      }
+    }
+
+    window.cleanupYonoDuplicates = async function() {
+      if (!state.supabase || !state.currentUser || state.yonoData.length === 0) return;
+      
+      const btn = document.querySelector('#yono-duplicate-banner button');
+      const originalHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerText = 'Cleaning...';
+      
+      const groups = {};
+      state.yonoData.forEach(tx => {
+        if (!tx.date || tx.balance === null || tx.balance === undefined) return;
+        const key = `${tx.date}_${parseFloat(tx.balance).toFixed(2)}_${parseFloat(tx.debit || 0).toFixed(2)}_${parseFloat(tx.credit || 0).toFixed(2)}`;
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(tx);
+      });
+      
+      const idsToDelete = [];
+      
+      Object.keys(groups).forEach(key => {
+        const list = groups[key];
+        if (list.length > 1) {
+          list.sort((a, b) => {
+            const scoreA = (a.cretarias ? 2 : 0) + (a.purpose ? 2 : 0) + (a.person ? 2 : 0) + ((a.brief || '').length > 0 ? 1 : 0) + ((a.details || '').length > 0 ? 1 : 0);
+            const scoreB = (b.cretarias ? 2 : 0) + (b.purpose ? 2 : 0) + (b.person ? 2 : 0) + ((b.brief || '').length > 0 ? 1 : 0) + ((b.details || '').length > 0 ? 1 : 0);
+            if (scoreB !== scoreA) return scoreB - scoreA;
+            return new Date(a.created_at || 0) - new Date(b.created_at || 0);
+          });
+          
+          for (let i = 1; i < list.length; i++) {
+            idsToDelete.push(list[i].id);
+          }
+        }
+      });
+      
+      if (idsToDelete.length === 0) {
+        showToast('No duplicates to clean up.', 'info');
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+        return;
+      }
+      
+      try {
+        const { error } = await state.supabase
+          .from('yono_statements')
+          .delete()
+          .in('id', idsToDelete);
+          
+        if (error) throw error;
+        
+        showToast(`Successfully cleaned up ${idsToDelete.length} duplicate transaction(s)!`, 'success');
+        fetchYonoData();
+      } catch (err) {
+        console.error(err);
+        showToast('Failed to clean up duplicates: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+      }
+    };
 
     function renderYonoUI() {
       let totalCredits = 0;
@@ -2491,43 +2589,38 @@ create policy "Users can delete their own pli records" on public.pli_records for
     }
 
     function getCretariasSelectHTML(selectedVal, onChangeAttr) {
-      const defaultOpt = `<option value="" ${!selectedVal ? 'selected' : ''}>-- Select --</option>`;
-      const options = Object.keys(state.criterias).map(c => 
-        `<option value="${c}" ${c === selectedVal ? 'selected' : ''}>${c}</option>`
-      ).join('');
-      return `<select class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.85rem; background: transparent; border: none; width: 100%; min-width: 100px; max-width: 130px;" ${onChangeAttr}>${defaultOpt}${options}</select>`;
+      return `<input type="text" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.85rem; background: transparent; border: none; width: 100%; min-width: 100px; max-width: 130px;" list="yono-cretarias-datalist" value="${selectedVal || ''}" ${onChangeAttr}>`;
     }
 
-    function getPurposeSelectHTML(cretariasVal, selectedVal, onChangeAttr) {
+    function getPurposeSelectHTML(cretariasVal, selectedVal, onChangeAttr, id = 'default') {
       const list = cretariasVal ? (state.criterias[cretariasVal] || []) : [];
-      const defaultOpt = `<option value="" ${!selectedVal ? 'selected' : ''}>-- Select --</option>`;
-      const options = list.map(p => 
-        `<option value="${p}" ${p === selectedVal ? 'selected' : ''}>${p}</option>`
-      ).join('');
-      return `<select class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.85rem; background: transparent; border: none; width: 100%; min-width: 120px; max-width: 160px;" ${onChangeAttr}>${defaultOpt}${options}</select>`;
+      const sortedList = [...list].sort((a,b) => a.localeCompare(b));
+      const datalistId = `datalist-purpose-${id}`;
+      const options = sortedList.map(p => `<option value="${p}"></option>`).join('');
+      return `
+        <input type="text" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.85rem; background: transparent; border: none; width: 100%; min-width: 120px; max-width: 160px;" list="${datalistId}" value="${selectedVal || ''}" ${onChangeAttr}>
+        <datalist id="${datalistId}">${options}</datalist>
+      `;
     }
 
     function getPersonSelectHTML(selectedVal, onChangeAttr) {
-      const defaultOpt = `<option value="" ${!selectedVal ? 'selected' : ''}>-- Select --</option>`;
-      const options = state.persons.map(p => 
-        `<option value="${p}" ${p === selectedVal ? 'selected' : ''}>${p}</option>`
-      ).join('');
-      return `<select class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.85rem; background: transparent; border: none; width: 100%; min-width: 100px; max-width: 130px;" ${onChangeAttr}>${defaultOpt}${options}</select>`;
+      return `<input type="text" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.85rem; background: transparent; border: none; width: 100%; min-width: 100px; max-width: 130px;" list="yono-person-datalist" value="${selectedVal || ''}" ${onChangeAttr}>`;
     }
 
     window.handleLedgerCretariasChange = async function(id, newCretarias) {
       await updateRowField(id, 'cretarias', newCretarias);
-      const purposeSelect = document.getElementById(`ledger-purpose-${id}`);
-      if (purposeSelect) {
-        if (!newCretarias) {
-          purposeSelect.innerHTML = '<option value="" selected>-- Select --</option>';
-          await updateRowField(id, 'purpose', '');
-          return;
-        }
-        const list = state.criterias[newCretarias] || [];
-        const options = list.map(p => `<option value="${p}">${p}</option>`).join('');
-        purposeSelect.innerHTML = '<option value="" selected>-- Select --</option>' + options;
-        await updateRowField(id, 'purpose', ''); // When criteria changes, reset purpose to blank
+      
+      const purposeInput = document.getElementById(`ledger-purpose-${id}`);
+      if (purposeInput) {
+        purposeInput.value = '';
+        await updateRowField(id, 'purpose', '');
+      }
+      
+      const datalist = document.getElementById(`datalist-purpose-${id}`);
+      if (datalist) {
+        const list = newCretarias ? (state.criterias[newCretarias] || []) : [];
+        const sortedList = [...list].sort((a,b) => a.localeCompare(b));
+        datalist.innerHTML = sortedList.map(p => `<option value="${p}"></option>`).join('');
       }
     };
 
@@ -2893,7 +2986,7 @@ create policy "Users can delete their own pli records" on public.pli_records for
               ${getCretariasSelectHTML(tx.cretarias, `onchange="handleLedgerCretariasChange('${tx.id}', this.value)"`)}
             </td>
             <td>
-              ${getPurposeSelectHTML(tx.cretarias, tx.purpose, `id="ledger-purpose-${tx.id}" onchange="updateRowField('${tx.id}', 'purpose', this.value)"`)}
+              ${getPurposeSelectHTML(tx.cretarias, tx.purpose, `id="ledger-purpose-${tx.id}" onchange="updateRowField('${tx.id}', 'purpose', this.value)"`, tx.id)}
             </td>
             <td>
               ${getPersonSelectHTML(tx.person, `onchange="updateRowField('${tx.id}', 'person', this.value)"`)}
@@ -2926,6 +3019,97 @@ create policy "Users can delete their own pli records" on public.pli_records for
       }, 150);
     };
 
+    window.registerNewMetadataIfAny = function(cretarias, purpose, person) {
+      let updated = false;
+      
+      if (cretarias && cretarias.trim() !== '') {
+        const cretVal = cretarias.trim();
+        const cretKey = cretVal.toUpperCase();
+        const existingKey = Object.keys(state.criterias).find(k => k.toUpperCase() === cretKey);
+        
+        if (!existingKey) {
+          state.criterias[cretVal] = ["OTHER"];
+          if (purpose && purpose.trim() !== '' && purpose.trim().toUpperCase() !== 'OTHER') {
+            state.criterias[cretVal].push(purpose.trim());
+          }
+          updated = true;
+        } else {
+          if (purpose && purpose.trim() !== '') {
+            const purpVal = purpose.trim();
+            const purpUpper = purpVal.toUpperCase();
+            const exists = state.criterias[existingKey].some(p => p.toUpperCase() === purpUpper);
+            if (!exists) {
+              state.criterias[existingKey].push(purpVal);
+              updated = true;
+            }
+          }
+        }
+      }
+      
+      if (person && person.trim() !== '') {
+        const persVal = person.trim();
+        const persUpper = persVal.toUpperCase();
+        const exists = state.persons.some(p => p.toUpperCase() === persUpper);
+        if (!exists) {
+          state.persons.push(persVal);
+          updated = true;
+        }
+      }
+      
+      if (updated) {
+        localStorage.setItem('khata_criterias', JSON.stringify(state.criterias));
+        localStorage.setItem('khata_persons', JSON.stringify(state.persons));
+        refreshAppDropdowns();
+      }
+    };
+
+    window.quickAddPersonFromForm = function() {
+      const input = document.getElementById('yono-person');
+      if (!input) return;
+      const val = input.value.trim().toUpperCase();
+      if (!val) {
+        showToast('Please type a person name to add.', 'warning');
+        return;
+      }
+      
+      if (state.persons.map(p => p.toUpperCase()).includes(val)) {
+        showToast('Person already exists in lists.', 'info');
+        return;
+      }
+      
+      state.persons.push(val);
+      localStorage.setItem('khata_persons', JSON.stringify(state.persons));
+      refreshAppDropdowns();
+      showToast(`Added "${val}" to persons list.`, 'success');
+    };
+
+    window.quickDeletePersonFromForm = function() {
+      const input = document.getElementById('yono-person');
+      if (!input) return;
+      const val = input.value.trim().toUpperCase();
+      if (!val) {
+        showToast('Please select or type a person name to delete.', 'warning');
+        return;
+      }
+      
+      const idx = state.persons.findIndex(p => p.toUpperCase() === val);
+      if (idx === -1) {
+        showToast('Person not found in custom list.', 'warning');
+        return;
+      }
+      
+      if (!confirm(`Are you sure you want to delete "${state.persons[idx]}" from lists?`)) return;
+      
+      state.persons.splice(idx, 1);
+      if (state.persons.length === 0) {
+        state.persons.push("OTHER");
+      }
+      localStorage.setItem('khata_persons', JSON.stringify(state.persons));
+      input.value = '';
+      refreshAppDropdowns();
+      showToast(`Deleted person from lists.`, 'success');
+    };
+
     window.updateRowField = async function(id, field, value) {
       if (!state.supabase) return;
       try {
@@ -2939,6 +3123,12 @@ create policy "Users can delete their own pli records" on public.pli_records for
         const idx = state.yonoData.findIndex(tx => tx.id === id);
         if (idx !== -1) {
           state.yonoData[idx][field] = value;
+          
+          if (field === 'cretarias' || field === 'purpose' || field === 'person') {
+            const tx = state.yonoData[idx];
+            registerNewMetadataIfAny(tx.cretarias, tx.purpose, tx.person);
+          }
+          
           renderYonoCharts();
         }
         showToast('Field updated successfully.', 'success');
@@ -3460,6 +3650,7 @@ create policy "Users can delete their own pli records" on public.pli_records for
           });
           
         if (error) throw error;
+        registerNewMetadataIfAny(cretarias, purpose, person);
         showToast('Transaction saved successfully!', 'success');
         form.reset();
         
@@ -3628,7 +3819,12 @@ create policy "Users can delete their own pli records" on public.pli_records for
           
         } catch (err) {
           console.error(err);
-          showToast('Error parsing Excel: ' + err.message, 'error');
+          const errMsg = (err.message || '').toLowerCase();
+          if (errMsg.includes('decrypt') || errMsg.includes('password') || errMsg.includes('encrypt') || errMsg.includes('crypto')) {
+            showToast('This Excel file is password-protected. Please open the file in Excel, remove the password, and re-save it before uploading.', 'error');
+          } else {
+            showToast('Error parsing Excel: ' + err.message, 'error');
+          }
         } finally {
           parseBtn.disabled = false;
           parseBtn.innerHTML = '<i data-lucide="play"></i><span>Parse Statement</span>';
@@ -3711,7 +3907,6 @@ create policy "Users can delete their own pli records" on public.pli_records for
           }
         }
       }
-      
       return null;
     }
 
@@ -3733,56 +3928,31 @@ create policy "Users can delete their own pli records" on public.pli_records for
       
       tbody.innerHTML = state.importedTransactions.map((tx, idx) => {
         const matchedCret = Object.keys(state.criterias).find(c => c.toUpperCase() === (tx.cretarias || '').toString().toUpperCase().trim());
-        const selectedCret = matchedCret || '';
-        
-        let cretOptions = `<option value="" ${!selectedCret ? 'selected' : ''}>-- Select --</option>`;
-        if (tx.cretarias && !matchedCret) {
-          cretOptions += `<option value="${tx.cretarias}" selected>${tx.cretarias}</option>`;
-        }
-        cretOptions += Object.keys(state.criterias).map(c => 
-          `<option value="${c}" ${c === selectedCret ? 'selected' : ''}>${c}</option>`
-        ).join('');
+        const selectedCret = matchedCret || tx.cretarias || '';
         
         const purposesList = selectedCret ? (state.criterias[selectedCret] || []) : [];
         const matchedPurp = purposesList.find(p => p.toUpperCase() === (tx.purpose || '').toString().toUpperCase().trim());
-        const selectedPurp = matchedPurp || '';
-        
-        let purpOptions = `<option value="" ${!selectedPurp ? 'selected' : ''}>-- Select --</option>`;
-        if (tx.purpose && !matchedPurp) {
-          purpOptions += `<option value="${tx.purpose}" selected>${tx.purpose}</option>`;
-        }
-        purpOptions += purposesList.map(p => 
-          `<option value="${p}" ${p === selectedPurp ? 'selected' : ''}>${p}</option>`
-        ).join('');
+        const selectedPurp = matchedPurp || tx.purpose || '';
         
         const matchedPers = state.persons.find(p => p.toUpperCase() === (tx.person || '').toString().toUpperCase().trim());
-        const selectedPers = matchedPers || '';
+        const selectedPers = matchedPers || tx.person || '';
         
-        let persOptions = `<option value="" ${!selectedPers ? 'selected' : ''}>-- Select --</option>`;
-        if (tx.person && !matchedPers) {
-          persOptions += `<option value="${tx.person}" selected>${tx.person}</option>`;
-        }
-        persOptions += state.persons.map(p => 
-          `<option value="${p}" ${p === selectedPers ? 'selected' : ''}>${p}</option>`
-        ).join('');
+        const sortedPurposes = [...purposesList].sort((a,b) => a.localeCompare(b));
+        const purpDatalistId = `datalist-import-purpose-${idx}`;
+        const purpOptions = sortedPurposes.map(p => `<option value="${p}"></option>`).join('');
         
         return `
           <tr>
             <td>${formatDate(tx.date)}</td>
             <td>
-              <select id="import-cretarias-${idx}" class="form-control" style="padding: 0.35rem 0.5rem; font-size: 0.85rem;" onchange="handleImportCretariasChange(${idx}, this.value)">
-                ${cretOptions}
-              </select>
+              <input type="text" id="import-cretarias-${idx}" class="form-control" list="yono-cretarias-datalist" style="padding: 0.35rem 0.5rem; font-size: 0.85rem;" value="${selectedCret}" oninput="handleImportCretariasChange(${idx}, this.value)">
             </td>
             <td>
-              <select id="import-purpose-${idx}" class="form-control" style="padding: 0.35rem 0.5rem; font-size: 0.85rem;">
-                ${purpOptions}
-              </select>
+              <input type="text" id="import-purpose-${idx}" class="form-control" list="${purpDatalistId}" style="padding: 0.35rem 0.5rem; font-size: 0.85rem;" value="${selectedPurp}">
+              <datalist id="${purpDatalistId}">${purpOptions}</datalist>
             </td>
             <td>
-              <select id="import-person-${idx}" class="form-control" style="padding: 0.35rem 0.5rem; font-size: 0.85rem;">
-                ${persOptions}
-              </select>
+              <input type="text" id="import-person-${idx}" class="form-control" list="yono-person-datalist" style="padding: 0.35rem 0.5rem; font-size: 0.85rem;" value="${selectedPers}">
             </td>
             <td>
               <input type="text" id="import-brief-${idx}" class="form-control" style="padding: 0.35rem 0.5rem; font-size: 0.85rem;" value="${tx.brief || ''}" placeholder="Brief summary" />
@@ -3797,16 +3967,16 @@ create policy "Users can delete their own pli records" on public.pli_records for
         `;
       }).join('');
     };
-
     window.handleImportCretariasChange = function(idx, newCretarias) {
-      const purposeSelect = document.getElementById(`import-purpose-${idx}`);
-      if (purposeSelect) {
-        if (!newCretarias) {
-          purposeSelect.innerHTML = '<option value="" selected>-- Select --</option>';
-          return;
-        }
-        const list = state.criterias[newCretarias] || [];
-        purposeSelect.innerHTML = '<option value="" selected>-- Select --</option>' + list.map(p => `<option value="${p}">${p}</option>`).join('');
+      const purposeInput = document.getElementById(`import-purpose-${idx}`);
+      if (purposeInput) {
+        purposeInput.value = '';
+      }
+      const datalist = document.getElementById(`datalist-import-purpose-${idx}`);
+      if (datalist) {
+        const list = newCretarias ? (state.criterias[newCretarias] || []) : [];
+        const sortedList = [...list].sort((a,b) => a.localeCompare(b));
+        datalist.innerHTML = sortedList.map(p => `<option value="${p}"></option>`).join('');
       }
     };
 
@@ -3869,6 +4039,10 @@ create policy "Users can delete their own pli records" on public.pli_records for
           .insert(rowsToInsert);
            
         if (error) throw error;
+        
+        rowsToInsert.forEach(row => {
+          registerNewMetadataIfAny(row.cretarias, row.purpose, row.person);
+        });
         
         showToast(`Successfully saved all ${rowsToInsert.length} transactions!`, 'success');
         
@@ -5252,7 +5426,6 @@ create policy "Users can delete their own pli records" on public.pli_records for
       refreshAppDropdowns();
       showToast('Person added successfully!', 'success');
     };
-
     window.deleteCustomPerson = function(idx) {
       state.persons.splice(idx, 1);
       if (state.persons.length === 0) {
@@ -5264,63 +5437,71 @@ create policy "Users can delete their own pli records" on public.pli_records for
       showToast('Person deleted successfully.', 'success');
     };
 
+    window.updateFormPurposeOptions = function(cretVal) {
+      const purposeDatalist = document.getElementById('yono-purpose-datalist');
+      if (!purposeDatalist) return;
+      const list = cretVal ? (state.criterias[cretVal] || []) : [];
+      const sortedList = [...list].sort((a,b) => a.localeCompare(b));
+      purposeDatalist.innerHTML = sortedList.map(p => `<option value="${p}"></option>`).join('');
+    };
+
+    window.updateImportDefaultPurposeOptions = function(cretVal) {
+      const defaultImportPurposeDatalist = document.getElementById('default-import-purpose-datalist');
+      if (!defaultImportPurposeDatalist) return;
+      const list = cretVal ? (state.criterias[cretVal] || []) : [];
+      const sortedList = [...list].sort((a,b) => a.localeCompare(b));
+      defaultImportPurposeDatalist.innerHTML = sortedList.map(p => `<option value="${p}"></option>`).join('');
+    };
+
     function refreshAppDropdowns() {
-      const entryCret = document.getElementById('yono-cretarias');
-      if (entryCret) {
-        const curCretVal = entryCret.value;
-        entryCret.innerHTML = '<option value="">-- Select --</option>' + Object.keys(state.criterias).map(c => `<option value="${c}">${c}</option>`).join('');
-        if (state.criterias[curCretVal]) {
-          entryCret.value = curCretVal;
-        } else {
-          entryCret.value = '';
-        }
-        updatePurposeOptions(entryCret.value, 'yono-purpose');
+      const sortedCriterias = Object.keys(state.criterias).sort((a, b) => a.localeCompare(b));
+      const sortedPersons = [...state.persons].sort((a, b) => a.localeCompare(b));
+
+      // 1. Populate datalists
+      const cretDatalist = document.getElementById('yono-cretarias-datalist');
+      if (cretDatalist) {
+        cretDatalist.innerHTML = sortedCriterias.map(c => `<option value="${c}"></option>`).join('');
       }
-      
+
+      const persDatalist = document.getElementById('yono-person-datalist');
+      if (persDatalist) {
+        persDatalist.innerHTML = sortedPersons.map(p => `<option value="${p}"></option>`).join('');
+      }
+
+      // Populate current Form Purpose Datalist
+      const formCret = document.getElementById('yono-cretarias');
+      if (formCret) {
+        updateFormPurposeOptions(formCret.value);
+      }
+
+      // Populate current Import Default Purpose Datalist
+      const defaultImportCret = document.getElementById('default-import-cretarias');
+      if (defaultImportCret) {
+        updateImportDefaultPurposeOptions(defaultImportCret.value);
+      }
+
+      // 2. Filter Dropdowns (Keep as Select, but sort alphabetically!)
       const filterCret = document.getElementById('yono-filter-cretarias');
       if (filterCret) {
-        const curFilterVal = filterCret.value;
-        filterCret.innerHTML = '<option value="">All Criterias</option>' + Object.keys(state.criterias).map(c => `<option value="${c}">${c}</option>`).join('');
-        if (curFilterVal === '' || state.criterias[curFilterVal]) {
-          filterCret.value = curFilterVal;
+        const curVal = filterCret.value;
+        filterCret.innerHTML = '<option value="">All Criterias</option>' + 
+          sortedCriterias.map(c => `<option value="${c}">${c}</option>`).join('');
+        if (curVal === '' || state.criterias[curVal]) {
+          filterCret.value = curVal;
         }
       }
-      
-      updateFilterPurposeOptions();
 
       const filterPers = document.getElementById('yono-filter-person');
       if (filterPers) {
-        const curPersVal = filterPers.value;
-        filterPers.innerHTML = '<option value="">All Persons</option>' + state.persons.map(p => `<option value="${p}">${p}</option>`).join('');
-        if (curPersVal === '' || state.persons.includes(curPersVal)) {
-          filterPers.value = curPersVal;
+        const curVal = filterPers.value;
+        filterPers.innerHTML = '<option value="">All Persons</option>' + 
+          sortedPersons.map(p => `<option value="${p}">${p}</option>`).join('');
+        if (curVal === '' || state.persons.includes(curVal)) {
+          filterPers.value = curVal;
         }
       }
 
-      const batchCret = document.getElementById('default-import-cretarias');
-      if (batchCret) {
-        const curBatchVal = batchCret.value;
-        batchCret.innerHTML = '<option value="">-- Choose --</option>' + Object.keys(state.criterias).map(c => `<option value="${c}">${c}</option>`).join('');
-        if (curBatchVal === '' || state.criterias[curBatchVal]) {
-          batchCret.value = curBatchVal;
-        }
-        updatePurposeOptions(batchCret.value, 'default-import-purpose');
-      }
-
-      const entryPers = document.getElementById('yono-person');
-      if (entryPers) {
-        const curPersVal = entryPers.value;
-        entryPers.innerHTML = '<option value="">-- Select --</option>' + state.persons.map(p => `<option value="${p}">${p}</option>`).join('');
-        if (state.persons.includes(curPersVal)) {
-          entryPers.value = curPersVal;
-        } else {
-          entryPers.value = '';
-        }
-      }
-      const batchPers = document.getElementById('default-import-person');
-      if (batchPers) {
-        batchPers.innerHTML = '<option value="">-- Choose --</option>' + state.persons.map(p => `<option value="${p}">${p}</option>`).join('');
-      }
+      updateFilterPurposeOptions();
     }
 
     window.updateFilterPurposeOptions = function() {
@@ -5340,32 +5521,16 @@ create policy "Users can delete their own pli records" on public.pli_records for
         purposes = Array.from(new Set(purposes));
       }
       
+      const sortedPurposes = purposes.sort((a, b) => a.localeCompare(b));
       const curVal = filterPurp.value;
       filterPurp.innerHTML = '<option value="">All Purposes</option>' + 
-        purposes.map(p => `<option value="${p}">${p}</option>`).join('');
+        sortedPurposes.map(p => `<option value="${p}">${p}</option>`).join('');
         
-      if (purposes.includes(curVal)) {
+      if (sortedPurposes.includes(curVal)) {
         filterPurp.value = curVal;
       } else {
         filterPurp.value = '';
       }
-    };
-
-    window.updatePurposeOptions = function(cretariasVal, selectElId) {
-      const select = document.getElementById(selectElId);
-      if (!select) return;
-      
-      const isImport = selectElId.includes('default-import');
-      const defaultText = isImport ? '-- Choose --' : '-- Select --';
-      
-      if (!cretariasVal) {
-        select.innerHTML = `<option value="">${defaultText}</option>`;
-        return;
-      }
-      
-      const list = state.criterias[cretariasVal] || [];
-      select.innerHTML = `<option value="">${defaultText}</option>` + 
-        list.map(p => `<option value="${p}">${p}</option>`).join('');
     };
 
     // 7. Event Listeners & Initialize
