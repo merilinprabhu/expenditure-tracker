@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Postal Life Insurance (PLI) Ledger</title>
+  
+  <!-- Instant Theme Loader -->
+  <script>
+    const savedTheme = localStorage.getItem('finance_theme') || 'midnight';
+    document.documentElement.className = `theme-${savedTheme}`;
+  </script>
+  
+  <!-- CDNs for External Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+  <!-- Premium Dark Glassmorphism CSS Stylesheet -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+    :root {
+      --bg-primary: #0b0f19;
+      --bg-secondary: #111827;
+      --bg-card: rgba(21, 28, 44, 0.6);
+      --bg-hover: rgba(31, 41, 55, 0.8);
+      
+      --accent-primary: #6366f1;
+      --accent-primary-glow: rgba(99, 102, 241, 0.15);
+      
+      --accent-success: #10b981;
+      --accent-success-glow: rgba(16, 185, 129, 0.15);
+      
+      --accent-danger: #ef4444;
+      --accent-danger-glow: rgba(239, 68, 68, 0.15);
+      
+      --accent-warning: #f59e0b;
+      --accent-warning-glow: rgba(245, 158, 11, 0.15);
+
+      --text-primary: #f3f4f6;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+      
+      --glass-border: rgba(255, 255, 255, 0.06);
+      --glass-shadow: rgba(0, 0, 0, 0.3);
+      --card-radius: 16px;
+      --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      
+      --bg-input: rgba(17, 24, 39, 0.6);
+      --bg-sidebar: rgba(17, 24, 39, 0.85);
+    }
+
+    /* Theme Overrides */
+    .theme-midnight {
+      --bg-primary: #080c14;
+      --bg-secondary: #0c111d;
+      --bg-card: rgba(15, 22, 36, 0.7);
+      --bg-hover: rgba(30, 41, 59, 0.85);
+      --accent-primary: #6366f1;
+      --accent-primary-glow: rgba(99, 102, 241, 0.15);
+      --text-primary: #f3f4f6;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+      --glass-border: rgba(255, 255, 255, 0.06);
+      --glass-shadow: rgba(0, 0, 0, 0.5);
+      --bg-input: rgba(12, 17, 29, 0.7);
+      --bg-sidebar: rgba(12, 17, 29, 0.9);
+    }
+    .theme-midnight body {
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.08) 0px, transparent 50%);
+    }
+
+    .theme-blue {
+      --bg-primary: #f0f7ff;
+      --bg-secondary: #e0f2fe;
+      --bg-card: rgba(255, 255, 255, 0.75);
+      --bg-hover: rgba(219, 234, 254, 0.9);
+      --accent-primary: #2563eb;
+      --accent-primary-glow: rgba(37, 99, 235, 0.08);
+      --text-primary: #1e3a8a;
+      --text-secondary: #1d4ed8;
+      --text-muted: #3b82f6;
+      --glass-border: rgba(37, 99, 235, 0.12);
+      --glass-shadow: rgba(30, 58, 138, 0.05);
+      --bg-input: rgba(255, 255, 255, 0.85);
+      --bg-sidebar: rgba(224, 242, 254, 0.9);
+    }
+    .theme-blue body {
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.05) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(96, 165, 250, 0.03) 0px, transparent 50%);
+    }
+
+    .theme-emerald {
+      --bg-primary: #f0fdf4;
+      --bg-secondary: #dcfce7;
+      --bg-card: rgba(255, 255, 255, 0.75);
+      --bg-hover: rgba(220, 252, 231, 0.9);
+      --accent-primary: #16a34a;
+      --accent-primary-glow: rgba(22, 163, 74, 0.08);
+      --text-primary: #14532d;
+      --text-secondary: #15803d;
+      --text-muted: #16a34a;
+      --glass-border: rgba(22, 163, 74, 0.12);
+      --glass-shadow: rgba(20, 83, 45, 0.05);
+      --bg-input: rgba(255, 255, 255, 0.85);
+      --bg-sidebar: rgba(220, 252, 231, 0.95);
+    }
+    .theme-emerald body {
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(22, 163, 74, 0.05) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(74, 222, 128, 0.03) 0px, transparent 50%);
+    }
+
+    .theme-orange {
+      --bg-primary: #fff7ed;
+      --bg-secondary: #ffedd5;
+      --bg-card: rgba(255, 255, 255, 0.75);
+      --bg-hover: rgba(254, 215, 170, 0.9);
+      --accent-primary: #ea580c;
+      --accent-primary-glow: rgba(234, 88, 12, 0.08);
+      --text-primary: #7c2d12;
+      --text-secondary: #9a3412;
+      --text-muted: #ea580c;
+      --glass-border: rgba(234, 88, 12, 0.12);
+      --glass-shadow: rgba(124, 45, 18, 0.05);
+      --bg-input: rgba(255, 255, 255, 0.85);
+      --bg-sidebar: rgba(255, 237, 213, 0.95);
+    }
+    .theme-orange body {
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(234, 88, 12, 0.05) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(251, 146, 60, 0.03) 0px, transparent 50%);
+    }
+
+    .theme-light {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f8fafc;
+      --bg-card: rgba(248, 250, 252, 0.8);
+      --bg-hover: rgba(241, 245, 249, 0.95);
+      --accent-primary: #0f172a;
+      --accent-primary-glow: rgba(15, 23, 42, 0.05);
+      --text-primary: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+      --glass-border: rgba(15, 23, 42, 0.1);
+      --glass-shadow: rgba(15, 23, 42, 0.05);
+      --bg-input: rgba(255, 255, 255, 0.95);
+      --bg-sidebar: rgba(248, 250, 252, 0.95);
+    }
+    .theme-light body {
+      background-image: none;
+    }
+
+    .theme-cream {
+      --bg-primary: #faf6f0;
+      --bg-secondary: #f4eae1;
+      --bg-card: rgba(255, 255, 255, 0.85);
+      --bg-hover: rgba(244, 234, 225, 0.95);
+      --accent-primary: #b45309;
+      --accent-primary-glow: rgba(180, 83, 9, 0.08);
+      --text-primary: #451a03;
+      --text-secondary: #78350f;
+      --text-muted: #b45309;
+      --glass-border: rgba(180, 83, 9, 0.12);
+      --glass-shadow: rgba(69, 26, 3, 0.05);
+      --bg-input: rgba(255, 255, 255, 0.9);
+      --bg-sidebar: rgba(244, 234, 225, 0.95);
+    }
+    .theme-cream body {
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(180, 83, 9, 0.05) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(251, 191, 36, 0.03) 0px, transparent 50%);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      transition: var(--transition-smooth);
+    }
+
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Header styling matching dashboard */
+    .top-header {
+      background: var(--bg-sidebar);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: 70px;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logo-icon {
+      background: linear-gradient(135deg, var(--accent-primary), #a78bfa);
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 1.25rem;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .logo-text {
+      font-weight: 700;
+      font-size: 1.15rem;
+      letter-spacing: -0.5px;
+      background: linear-gradient(to right, var(--text-primary), var(--text-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-container {
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+      margin: 0 2rem;
+    }
+
+    .nav-links {
+      display: flex;
+      list-style: none;
+      gap: 0.5rem;
+      background: rgba(0, 0, 0, 0.15);
+      padding: 0.35rem;
+      border-radius: 10px;
+      border: 1px solid var(--glass-border);
+    }
+
+    .nav-item a {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 7px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: var(--transition-smooth);
+    }
+
+    .nav-item a i {
+      width: 16px;
+      height: 16px;
+    }
+
+    .nav-item a:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-item.active a {
+      color: white;
+      background: var(--accent-primary);
+      box-shadow: 0 4px 12px var(--accent-primary-glow);
+    }
+
+    .right-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .theme-switcher-header select {
+      background: var(--bg-input);
+      color: var(--text-primary);
+      border: 1px solid var(--glass-border);
+      border-radius: 6px;
+      padding: 0.3rem 0.6rem;
+      font-size: 0.8rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-left: 1px solid var(--glass-border);
+      padding-left: 1rem;
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #8b5cf6, var(--accent-primary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .user-name {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    .user-email {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .logout-btn {
+      background: transparent;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+      border-radius: 6px;
+      padding: 0.35rem 0.65rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-weight: 500;
+      transition: var(--transition-smooth);
+    }
+
+    .logout-btn:hover {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: #ef4444;
+    }
+
+    /* Main layout elements */
+    .main-content {
+      flex-grow: 1;
+      padding: 1.5rem;
+      max-width: 1300px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+    }
+
+    .page-title h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 0.25rem;
+    }
+
+    .page-title p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    /* Glass card styling */
+    .glass-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--card-radius);
+      padding: 1.25rem;
+      box-shadow: 0 8px 32px var(--glass-shadow);
+      margin-bottom: 1.5rem;
+    }
+
+    .tab-navigation {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--glass-border);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      padding: 0.4rem 0.85rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: var(--transition-smooth);
+    }
+
+    .tab-btn:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .tab-btn.active {
+      color: white;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--glass-border);
+    }
+
+    .sub-tab-content {
+      display: none;
+    }
+
+    .sub-tab-content.active {
+      display: block;
+    }
+
+    /* Form Controls */
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 0.35rem;
+    }
+
+    .form-control {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--glass-border);
+      border-radius: 6px;
+      padding: 0.45rem 0.75rem;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.85rem;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+
+    .form-control:focus {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px var(--accent-primary-glow);
+    }
+
+    .btn {
+      background: var(--accent-primary);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 0.45rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: var(--transition-smooth);
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--glass-border);
+      color: var(--text-primary);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .btn-danger {
+      background: var(--accent-danger);
+    }
+
+    .btn-success {
+      background: var(--accent-success);
+    }
+
+    /* Excel-Specific Tables Styling (Image replication) */
+    .excel-container {
+      width: 100%;
+      overflow-x: auto;
+      background: #ffffff;
+      color: #000000;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.15);
+      margin-bottom: 1.5rem;
+      font-family: Arial, sans-serif;
+    }
+
+    .excel-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1rem;
+    }
+
+    .excel-table th, .excel-table td {
+      border: 1px solid #d1d5db;
+      padding: 6px 10px;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    /* Header: Postal Life Insurance */
+    .excel-hdr-brown {
+      background-color: #873600;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: bold;
+      text-align: center !important;
+      letter-spacing: 0.5px;
+      padding: 8px !important;
+    }
+
+    /* Column Headers: Bank account info */
+    .excel-hdr-blue {
+      background-color: #2980b9;
+      color: #ffffff;
+      font-weight: bold;
+      font-size: 12px;
+      text-align: left;
+      text-transform: uppercase;
+    }
+
+    /* Secondary aggregates brown header */
+    .excel-hdr-orange {
+      background-color: #ba4a00;
+      color: #ffffff;
+      font-weight: bold;
+      font-size: 12.5px;
+      text-align: center !important;
+      text-transform: uppercase;
+    }
+
+    /* Summary Value cells */
+    .excel-val-orange {
+      background-color: #f5cba7;
+      color: #000000;
+      font-weight: bold;
+      font-size: 13.5px;
+      text-align: center !important;
+    }
+
+    /* Ledger pink header */
+    .excel-hdr-pink {
+      background-color: #ec7063;
+      color: #ffffff;
+      font-weight: bold;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    /* Ledger content formatting */
+    .excel-table tbody tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .excel-table tbody tr:hover {
+      background-color: #f2f4f4;
+    }
+
+    .excel-cell-center {
+      text-align: center !important;
+    }
+
+    .excel-cell-right {
+      text-align: right !important;
+    }
+
+    /* Borderless transparent inputs in spreadsheet mode */
+    .excel-input {
+      width: 100%;
+      border: none;
+      background: transparent;
+      color: inherit;
+      font-family: inherit;
+      font-size: inherit;
+      text-align: inherit;
+      outline: none;
+      padding: 0;
+    }
+
+    .excel-input:focus {
+      background: #ebf5fb;
+      box-shadow: inset 0 0 2px #2980b9;
+    }
+
+    /* Toast system */
+    .toast-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      background: rgba(17, 24, 39, 0.9);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      padding: 0.75rem 1.25rem;
+      color: white;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Print styling rules */
+    @media print {
+      body {
+        background: white !important;
+        color: black !important;
+      }
+      .top-header, .top-bar, .tab-navigation, .print-hide, .btn-action-row {
+        display: none !important;
+      }
+      .main-content {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+      }
+      .excel-container {
+        box-shadow: none !important;
+        padding: 0 !important;
+      }
+      .excel-table th, .excel-table td {
+        border: 1.5px solid #000000 !important;
+        color: #000000 !important;
+      }
+    }
+    
+    /* Stats and Charts CSS layouts matching dashboard */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .glass-card.success {
+      border-left: 4px solid var(--accent-success);
+    }
+
+    .glass-card.primary {
+      border-left: 4px solid var(--accent-primary);
+    }
+
+    .glass-card.warning {
+      border-left: 4px solid var(--accent-warning);
+    }
+
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-icon {
+      color: var(--text-muted);
+    }
+
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-footer {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .chart-card {
+      padding: 1.25rem;
+    }
+
+    .chart-header {
+      margin-bottom: 1rem;
+    }
+
+    .chart-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .chart-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .chart-container {
+      position: relative;
+      height: 320px;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Toast Notification System -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Main Application Wrapper -->
+  <div class="app-container">
+    
+    <!-- Top Navigation Bar Header -->
+    <header class="top-header" id="app-header">
+      <div class="logo-container">
+        <div class="logo-icon">₹</div>
+        <span class="logo-text">Finance Tracker</span>
+      </div>
+      
+      <div class="nav-container">
+        <nav>
+          <ul class="nav-links">
+            <li class="nav-item" id="nav-dashboard">
+              <a href="dashboard.html">
+                <i data-lucide="layout-dashboard"></i>
+                <span>Dashboard</span>
+              </a>
+            </li>
+            <li class="nav-item" id="nav-yono">
+              <a href="yonostatement.html#yono">
+                <i data-lucide="wallet"></i>
+                <span>Yono Statement</span>
+              </a>
+            </li>
+            <li class="nav-item" id="nav-sip">
+              <a href="yonostatement.html#sip">
+                <i data-lucide="trending-up"></i>
+                <span>SIP Statements</span>
+              </a>
+            </li>
+            <li class="nav-item" id="nav-salary">
+              <a href="salaryaccount.html">
+                <i data-lucide="banknote"></i>
+                <span>Salary Account</span>
+              </a>
+            </li>
+            <li class="nav-item active" id="nav-pli">
+              <a href="#pli">
+                <i data-lucide="shield"></i>
+                <span>PLI</span>
+              </a>
+            </li>
+            <li class="nav-item" id="nav-settings">
+              <a href="yonostatement.html#settings">
+                <i data-lucide="settings"></i>
+                <span>Settings</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <div class="right-header">
+        <div class="theme-switcher-header">
+          <select id="sidebar-theme-select" class="form-control">
+            <option value="midnight">🌌 Midnight Black</option>
+            <option value="blue">🌊 Light Blue</option>
+            <option value="emerald">🌲 Pine Green</option>
+            <option value="orange">🍊 Sunset Orange</option>
+            <option value="light">⚪ Pure White</option>
+            <option value="cream">🍦 Soft Cream</option>
+          </select>
+        </div>
+        
+        <div class="user-profile">
+          <div class="user-avatar" id="profile-avatar">U</div>
+          <div class="user-info">
+            <span class="user-name" id="profile-name">Loading...</span>
+            <span class="user-email" id="profile-email">email@domain.com</span>
+          </div>
+        </div>
+        
+        <button class="logout-btn" id="btn-logout">
+          <i data-lucide="log-out"></i>
+          <span>Logout</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <div class="top-bar">
+        <div class="page-title">
+          <h1>Postal Life Insurance (PLI)</h1>
+          <p>Log premium deposits, view bonuses, and trace the policy ledger mimicking your spreadsheet layout.</p>
+        </div>
+        
+        <div class="btn-action-row" style="display: flex; gap: 0.5rem;">
+          <button onclick="window.print()" class="btn btn-secondary">
+            <i data-lucide="printer"></i>
+            <span>Print Ledger</span>
+          </button>
+          <button onclick="exportPliToExcel()" class="btn btn-success">
+            <i data-lucide="download"></i>
+            <span>Export Excel</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="tab-navigation print-hide">
+        <button class="tab-btn active" onclick="switchPliTab('dash')">
+          <i data-lucide="layout-dashboard"></i>
+          <span>PLI Dashboard</span>
+        </button>
+        <button class="tab-btn" onclick="switchPliTab('sheet')">
+          <i data-lucide="table"></i>
+          <span>Spreadsheet View</span>
+        </button>
+        <button class="tab-btn" onclick="switchPliTab('entry')">
+          <i data-lucide="plus-circle"></i>
+          <span>Add New Record</span>
+        </button>
+      </div>
+
+      <!-- PLI DASHBOARD TAB -->
+      <div id="pli-tab-dash" class="sub-tab-content active">
+        <div class="stats-grid">
+          <div class="glass-card success">
+            <div class="stat-header">
+              <span>Total Sum Invested</span>
+              <div class="stat-icon"><i data-lucide="banknote"></i></div>
+            </div>
+            <div class="stat-value" id="stat-dash-total-invested">₹0.00</div>
+            <div class="stat-footer">
+              <span>Cumulative premiums paid so far</span>
+            </div>
+          </div>
+          
+          <div class="glass-card primary">
+            <div class="stat-header">
+              <span>Expected Maturity Value</span>
+              <div class="stat-icon"><i data-lucide="shield"></i></div>
+            </div>
+            <div class="stat-value" id="stat-dash-maturity">₹20,00,000.00</div>
+            <div class="stat-footer">
+              <span>Total payable on 55 years</span>
+            </div>
+          </div>
+          
+          <div class="glass-card warning">
+            <div class="stat-header">
+              <span>Bonus Accrued</span>
+              <div class="stat-icon"><i data-lucide="award"></i></div>
+            </div>
+            <div class="stat-value" id="stat-dash-bonus">₹7,61,600.00</div>
+            <div class="stat-footer">
+              <span>Accrued policy bonus</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="charts-grid">
+          <div class="glass-card chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">Premium Payments Trend</h3>
+              <p class="chart-subtitle">PLI premium deposits timeline month-on-month</p>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-pli-trend"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SPREADSHEET VIEW -->
+      <div id="pli-tab-sheet" class="sub-tab-content">
+        
+        <!-- Editable excel spreadsheet representation -->
+        <div class="excel-container">
+          
+          <!-- PART 1: Bank Info Table -->
+          <table class="excel-table" style="margin-bottom: 2rem;">
+            <thead>
+              <tr>
+                <th colspan="6" class="excel-hdr-brown">Postal Life Insurance.</th>
+              </tr>
+              <tr>
+                <th class="excel-hdr-blue" style="width: 80px;">SL.NO.</th>
+                <th class="excel-hdr-blue">BANK NAME</th>
+                <th class="excel-hdr-blue">A/C NUMBER</th>
+                <th class="excel-hdr-blue">IFSC</th>
+                <th class="excel-hdr-blue">CIF</th>
+                <th class="excel-hdr-blue">OTHER</th>
+              </tr>
+            </thead>
+            <tbody id="pli-banks-tbody">
+              <!-- Editable account row 1 -->
+              <tr>
+                <td class="excel-cell-center font-bold">1</td>
+                <td><input type="text" class="excel-input bank-name" value="IPPB" onchange="saveBankDetails()"></td>
+                <td><input type="text" class="excel-input bank-ac" value="024710068379" onchange="saveBankDetails()"></td>
+                <td><input type="text" class="excel-input bank-ifsc" value="IPOS0000001" onchange="saveBankDetails()"></td>
+                <td><input type="text" class="excel-input bank-cif" value="6047109258" onchange="saveBankDetails()"></td>
+                <td><input type="text" class="excel-input bank-other" value="" onchange="saveBankDetails()"></td>
+              </tr>
+              <!-- Editable account row 2 -->
+              <tr>
+                <td class="excel-cell-center font-bold">2</td>
+                <td><input type="text" class="excel-input bank-name" value="SB POST" onchange="saveBankDetails()"></td>
+                <td><input type="text" class="excel-input bank-ac" value="3631628902" onchange="saveBankDetails()"></td>
+                <td><input type="text" class="excel-input bank-ifsc" value="" onchange="saveBankDetails()"></td>
+                <td><input type="text" class="excel-input bank-cif" value="338605600" onchange="saveBankDetails()"></td>
+                <td><input type="text" class="excel-input bank-other" value="" onchange="saveBankDetails()"></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- PART 2: Aggregated Summary Cards -->
+          <table class="excel-table" style="margin-bottom: 2rem;">
+            <tbody>
+              <tr>
+                <td colspan="2" class="excel-hdr-orange" style="width: 33.3%;">TOTAL SUM OF PREMIUM</td>
+                <td colspan="2" class="excel-hdr-orange" style="width: 33.3%;">BONUS</td>
+                <td colspan="2" class="excel-hdr-orange" style="width: 33.3%;">TOTAL ON 55 YEAR</td>
+              </tr>
+              <tr>
+                <td colspan="2" class="excel-val-orange">
+                  <input type="text" id="stat-sum-premium" class="excel-input excel-cell-center" value="₹ 12,38,400.00" onchange="savePliStats()">
+                </td>
+                <td colspan="2" class="excel-val-orange">
+                  <input type="text" id="stat-bonus" class="excel-input excel-cell-center" value="₹ 7,61,600.00" onchange="savePliStats()">
+                </td>
+                <td colspan="2" class="excel-val-orange" id="stat-total-55" style="background-color: #f5cba7; font-weight: bold;">
+                  ₹ 20,00,000.00
+                </td>
+              </tr>
+              
+              <tr style="height: 10px;"><td colspan="6" style="border: none; background: transparent;"></td></tr>
+              
+              <tr>
+                <td colspan="2" class="excel-hdr-orange">TOTAL MONTHS</td>
+                <td class="excel-hdr-orange">1YEAR PREMIUM</td>
+                <td colspan="2" class="excel-hdr-orange">SUM OF THE YEAR</td>
+                <td class="excel-hdr-orange">TOTAL SUM NOW</td>
+              </tr>
+              <tr>
+                <td colspan="2" class="excel-val-orange" id="stat-total-months">2</td>
+                <td class="excel-val-orange">
+                  <input type="text" id="stat-year-premium" class="excel-input excel-cell-center" value="₹ 4,128.00" onchange="savePliStats()">
+                </td>
+                <td colspan="2" class="excel-val-orange" id="stat-sum-year">₹ 8,256.00</td>
+                <td class="excel-val-orange" id="stat-sum-now">₹ 1,69,765.00</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- PART 3: Ledger Year Filter & Controls -->
+          <div class="print-hide" style="display: flex; justify-content: space-between; align-items: center; background: #f2f4f4; padding: 0.5rem 1rem; border-top: 1px solid #d1d5db; border-left: 1px solid #d1d5db; border-right: 1px solid #d1d5db;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-size: 13px; font-weight: bold; color: #4b5563;">Filter Year:</span>
+              <select id="ledger-year-filter" onchange="renderPliLedger()" style="padding: 0.25rem 0.5rem; font-size: 13px; border-radius: 4px; border: 1px solid #d1d5db;">
+                <option value="ALL">All Years</option>
+                <option value="2022">2022</option>
+                <option value="2023" selected>2023</option>
+                <option value="2024">2024</option>
+                <option value="2025">2025</option>
+              </select>
+            </div>
+            
+            <div style="display: flex; gap: 0.5rem;">
+              <button onclick="addNewLedgerRow()" class="btn btn-success" style="padding: 0.25rem 0.6rem; font-size: 12px;">
+                <i data-lucide="plus" style="width: 12px; height: 12px; vertical-align: middle;"></i> Add Row
+              </button>
+              <button onclick="syncLedgerToDatabase()" class="btn" style="padding: 0.25rem 0.6rem; font-size: 12px;">
+                <i data-lucide="save" style="width: 12px; height: 12px; vertical-align: middle;"></i> Save All changes
+              </button>
+            </div>
+          </div>
+
+          <!-- PART 4: Ledger Table -->
+          <table class="excel-table">
+            <thead>
+              <tr>
+                <th class="excel-hdr-pink" style="width: 80px; text-align: center;">SL.NO.</th>
+                <th class="excel-hdr-pink">MONTHS</th>
+                <th class="excel-hdr-pink">YEAR</th>
+                <th class="excel-hdr-pink">DATED</th>
+                <th class="excel-hdr-pink" style="text-align: right;">PREMIUM</th>
+                <th class="excel-hdr-pink" style="text-align: right;">BONUS</th>
+                <th class="excel-hdr-pink print-hide" style="width: 60px; text-align: center;">ACTION</th>
+              </tr>
+            </thead>
+            <tbody id="pli-ledger-tbody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+
+        </div>
+      </div>
+
+      <!-- ENTRY FORM VIEW -->
+      <div id="pli-tab-entry" class="sub-tab-content">
+        <div class="glass-card" style="max-width: 600px; margin: 0 auto;">
+          <h2 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem;">Log Premium Payment</h2>
+          <form id="pli-entry-form" onsubmit="handlePliSubmit(event)">
+            <div class="form-group">
+              <label for="entry-month">Month</label>
+              <select id="entry-month" class="form-control" required>
+                <option value="JANUARY">JANUARY</option>
+                <option value="FEBRUARY">FEBRUARY</option>
+                <option value="MARCH">MARCH</option>
+                <option value="APRIL">APRIL</option>
+                <option value="MAY">MAY</option>
+                <option value="JUNE">JUNE</option>
+                <option value="JULY">JULY</option>
+                <option value="AUGUST">AUGUST</option>
+                <option value="SEPTEMBER">SEPTEMBER</option>
+                <option value="OCTOBER">OCTOBER</option>
+                <option value="NOVEMBER">NOVEMBER</option>
+                <option value="DECEMBER">DECEMBER</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="entry-year">Year</label>
+              <input type="number" id="entry-year" class="form-control" value="2023" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="entry-date">Payment Date</label>
+              <input type="date" id="entry-date" class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="entry-premium">Premium Paid (₹)</label>
+              <input type="number" step="0.01" id="entry-premium" class="form-control" value="4128.00" required>
+            </div>
+
+            <div class="form-group">
+              <label for="entry-bonus">Bonus Earned (₹)</label>
+              <input type="number" step="0.01" id="entry-bonus" class="form-control" value="0.00">
+            </div>
+            
+            <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1.5rem;">
+              <button type="button" onclick="switchPliTab('sheet')" class="btn btn-secondary">Cancel</button>
+              <button type="submit" class="btn">Log Record</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    // Global State for PLI
+    const state = {
+      supabaseUrl: localStorage.getItem('finance_sb_url') || 'https://ovxmbpwugjjdmlhabres.supabase.co',
+      supabaseAnonKey: localStorage.getItem('finance_sb_key') || 'sb_publishable_0JZqTDzC3nu2zkBKmwcXxQ_eQlauotg',
+      supabase: null,
+      currentUser: null,
+      pliData: [],
+      bankDetails: [],
+      pliStats: {},
+      activeCharts: {}
+    };
+
+    // Default static ledger values representing the user's specific spreadsheet records
+    const defaultPliRecords = [
+      { month: 'AUGUST', year: 2022, dated: '2022-08-22', premium: 4128, bonus: 0 },
+      { month: 'SEPTEMBER', year: 2022, dated: '2022-09-22', premium: 4128, bonus: 0 },
+      { month: 'OCTOBER', year: 2022, dated: '2022-10-22', premium: 4128, bonus: 0 },
+      { month: 'NOVEMBER', year: 2022, dated: '2022-12-11', premium: 0, bonus: 0 }, // Dash / empty in excel
+      { month: 'DECEMBER', year: 2022, dated: '2022-12-11', premium: 8256, bonus: 0 },
+      { month: 'JANUARY', year: 2023, dated: '2023-01-15', premium: 4128, bonus: 0 },
+      { month: 'FEBRUARY', year: 2023, dated: '2023-02-14', premium: 4128, bonus: 0 },
+      { month: 'MARCH', year: 2023, dated: '2023-03-14', premium: 4128, bonus: 0 },
+      { month: 'APRIL', year: 2023, dated: '2023-04-17', premium: 4128, bonus: 0 },
+      { month: 'MAY', year: 2023, dated: '2023-05-16', premium: 4128, bonus: 0 },
+      { month: 'JUNE', year: 2023, dated: '2023-07-25', premium: 4128, bonus: 0 },
+      { month: 'JULY', year: 2023, dated: '2023-07-25', premium: 4128, bonus: 0 },
+      { month: 'AUGUST', year: 2023, dated: '2023-07-25', premium: 4128, bonus: 0 },
+      { month: 'SEPTEMBER', year: 2023, dated: '2023-09-21', premium: 4128, bonus: 0 }
+    ];
+
+    // Helper: Parse Currency Formatting to Float
+    function parseCurrency(str) {
+      if (!str) return 0;
+      const clean = str.replace(/[₹\s,]/g, '');
+      return parseFloat(clean) || 0;
+    }
+
+    // Helper: Format Currency to INR Spreadsheet style
+    function formatINR(val, isBold = false) {
+      const num = parseFloat(val);
+      if (isNaN(num) || num === 0) return '-';
+      const formatted = new Intl.NumberFormat('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(num);
+      return '₹   ' + formatted;
+    }
+
+    // Parse date for Excel display (e.g. 22-Aug-22)
+    function formatExcelDate(dateStr) {
+      if (!dateStr) return '';
+      const date = new Date(dateStr);
+      if (isNaN(date)) return dateStr;
+      const day = date.getDate();
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      const month = monthNames[date.getMonth()];
+      const year = date.getFullYear().toString().substring(2);
+      return `${day}-${month}-${year}`;
+    }
+
+    // Initialize Supabase Client
+    function initSupabase() {
+      if (state.supabaseUrl && state.supabaseAnonKey) {
+        try {
+          state.supabase = supabase.createClient(state.supabaseUrl, state.supabaseAnonKey);
+          return true;
+        } catch (e) {
+          console.error("Supabase init error:", e);
+          state.supabase = null;
+          return false;
+        }
+      }
+      return false;
+    }
+
+    // Session validator
+    async function checkUserSession() {
+      if (!state.supabase) {
+        window.location.href = 'index.html';
+        return;
+      }
+      try {
+        const { data: { session } } = await state.supabase.auth.getSession();
+        if (session) {
+          state.currentUser = session.user;
+          document.getElementById('profile-name').innerText = state.currentUser.email.split('@')[0];
+          document.getElementById('profile-email').innerText = state.currentUser.email;
+          document.getElementById('profile-avatar').innerText = state.currentUser.email.substring(0, 2).toUpperCase();
+          
+          await loadPliData();
+        } else {
+          window.location.href = 'index.html';
+        }
+      } catch (err) {
+        console.error(err);
+        window.location.href = 'index.html';
+      }
+    }
+
+    // Logout trigger
+    async function handleLogout() {
+      if (state.supabase) {
+        await state.supabase.auth.signOut();
+      }
+      window.location.href = 'index.html';
+    }
+
+    // Toast triggers
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      
+      const toast = document.createElement('div');
+      toast.className = `toast`;
+      toast.style.borderLeft = type === 'success' ? '4px solid #10b981' : type === 'error' ? '4px solid #ef4444' : '4px solid #3b82f6';
+      toast.innerHTML = `
+        <i data-lucide="${type === 'success' ? 'check-circle' : type === 'error' ? 'alert-circle' : 'info'}" style="width: 16px; height: 16px; color: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};"></i>
+        <span>${msg}</span>
+      `;
+      container.appendChild(toast);
+      lucide.createIcons();
+      
+      setTimeout(() => {
+        toast.style.animation = 'slideIn 0.3s ease-out reverse';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Switch Tabs
+    window.switchPliTab = function(tab) {
+      document.querySelectorAll('.sub-tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      
+      document.getElementById(`pli-tab-${tab}`).classList.add('active');
+      const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => btn.getAttribute('onclick').includes(tab));
+      if (activeBtn) activeBtn.classList.add('active');
+
+      if (tab === 'dash') {
+        renderPliCharts();
+      }
+    };
+
+    // Load Bank Profiles
+    function loadBankDetails() {
+      const saved = localStorage.getItem(`finance_pli_banks_${state.currentUser.id}`);
+      if (saved) {
+        try {
+          const banks = JSON.parse(saved);
+          const rows = document.querySelectorAll('#pli-banks-tbody tr');
+          banks.forEach((b, idx) => {
+            if (rows[idx]) {
+              rows[idx].querySelector('.bank-name').value = b.bankName || '';
+              rows[idx].querySelector('.bank-ac').value = b.acNumber || '';
+              rows[idx].querySelector('.bank-ifsc').value = b.ifsc || '';
+              rows[idx].querySelector('.bank-cif').value = b.cif || '';
+              rows[idx].querySelector('.bank-other').value = b.other || '';
+            }
+          });
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
+    // Save Bank Profile to Local Storage
+    window.saveBankDetails = function() {
+      const data = [];
+      document.querySelectorAll('#pli-banks-tbody tr').forEach(row => {
+        data.push({
+          bankName: row.querySelector('.bank-name').value,
+          acNumber: row.querySelector('.bank-ac').value,
+          ifsc: row.querySelector('.bank-ifsc').value,
+          cif: row.querySelector('.bank-cif').value,
+          other: row.querySelector('.bank-other').value
+        });
+      });
+      localStorage.setItem(`finance_pli_banks_${state.currentUser.id}`, JSON.stringify(data));
+      showToast('Bank details updated.', 'success');
+    };
+
+    // Load custom inputs (Maturity values and totals)
+    function loadPliStats() {
+      const saved = localStorage.getItem(`finance_pli_stats_${state.currentUser.id}`);
+      if (saved) {
+        try {
+          const stats = JSON.parse(saved);
+          if (stats.sumPremium) document.getElementById('stat-sum-premium').value = stats.sumPremium;
+          if (stats.bonus) document.getElementById('stat-bonus').value = stats.bonus;
+          if (stats.yearPremium) document.getElementById('stat-year-premium').value = stats.yearPremium;
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      recalculateStats();
+    }
+
+    // Save custom input stats to Local Storage
+    window.savePliStats = function() {
+      const stats = {
+        sumPremium: document.getElementById('stat-sum-premium').value,
+        bonus: document.getElementById('stat-bonus').value,
+        yearPremium: document.getElementById('stat-year-premium').value
+      };
+      localStorage.setItem(`finance_pli_stats_${state.currentUser.id}`, JSON.stringify(stats));
+      recalculateStats();
+    };
+
+    // Recalculate stats dynamically
+    function recalculateStats() {
+      const sumPremiumVal = parseCurrency(document.getElementById('stat-sum-premium').value);
+      const bonusVal = parseCurrency(document.getElementById('stat-bonus').value);
+      const total55 = sumPremiumVal + bonusVal;
+      
+      document.getElementById('stat-total-55').innerText = formatINR(total55);
+      
+      // Calculate ledger specific metrics based on filtered year or entire ledger
+      const yearFilter = document.getElementById('ledger-year-filter')?.value || '2023';
+      const yearPremiumVal = parseCurrency(document.getElementById('stat-year-premium').value);
+      
+      // Filter records
+      let filteredRecords = state.pliData;
+      if (yearFilter !== 'ALL') {
+        const filterYr = parseInt(yearFilter);
+        filteredRecords = state.pliData.filter(r => r.year === filterYr);
+      }
+      
+      // Calculate months paid
+      const monthsPaid = filteredRecords.filter(r => r.premium > 0).length;
+      document.getElementById('stat-total-months').innerText = monthsPaid;
+      
+      const sumOfTheYear = monthsPaid * yearPremiumVal;
+      document.getElementById('stat-sum-year').innerText = formatINR(sumOfTheYear);
+      
+      // Total sum now (all-time premium paid across database)
+      const totalSumNow = state.pliData.reduce((acc, r) => acc + (parseFloat(r.premium) || 0), 0);
+      document.getElementById('stat-sum-now').innerText = formatINR(totalSumNow);
+
+      // Sync with Dashboard Cards
+      const dashTotalInvested = document.getElementById('stat-dash-total-invested');
+      const dashMaturity = document.getElementById('stat-dash-maturity');
+      const dashBonus = document.getElementById('stat-dash-bonus');
+      
+      if (dashTotalInvested) dashTotalInvested.innerText = formatINR(totalSumNow);
+      if (dashMaturity) dashMaturity.innerText = formatINR(total55);
+      if (dashBonus) dashBonus.innerText = formatINR(bonusVal);
+    }
+
+    // Render Chart.js line graph for PLI premium timeline
+    function renderPliCharts() {
+      const canvas = document.getElementById('chart-pli-trend');
+      if (!canvas) return;
+      
+      if (state.activeCharts['pli-trend']) {
+        state.activeCharts['pli-trend'].destroy();
+      }
+      
+      // Sort data chronologically for timeline display
+      const chronological = [...state.pliData].sort((a, b) => {
+        const dateA = a.dated ? new Date(a.dated) : new Date(a.year, 0, 1);
+        const dateB = b.dated ? new Date(b.dated) : new Date(b.year, 0, 1);
+        return dateA - dateB;
+      });
+      
+      const labels = chronological.map(r => `${r.month.substring(0, 3)} ${r.year}`);
+      const premiums = chronological.map(r => parseFloat(r.premium) || 0);
+      
+      if (labels.length === 0) return;
+      
+      // Determine line color based on active theme
+      const isLightTheme = document.documentElement.className.includes('theme-light') || 
+                           document.documentElement.className.includes('theme-blue') ||
+                           document.documentElement.className.includes('theme-emerald') ||
+                           document.documentElement.className.includes('theme-orange') ||
+                           document.documentElement.className.includes('theme-cream');
+      const lineColor = isLightTheme ? '#4f46e5' : '#818cf8';
+      const gridColor = isLightTheme ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.05)';
+      const textColor = isLightTheme ? '#1e293b' : '#9ca3af';
+      
+      state.activeCharts['pli-trend'] = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Premium Paid (₹)',
+            data: premiums,
+            borderColor: lineColor,
+            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+            borderWidth: 2.5,
+            pointBackgroundColor: lineColor,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            tension: 0.25,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { color: textColor, font: { family: 'Outfit', size: 10 } }
+            },
+            y: {
+              grid: { color: gridColor },
+              ticks: { color: textColor, font: { family: 'Outfit', size: 10 } }
+            }
+          }
+        }
+      });
+    }
+
+    // Load PLI data from database/local storage
+    async function loadPliData() {
+      loadBankDetails();
+      
+      if (state.supabase) {
+        try {
+          const { data, error } = await state.supabase
+            .from('pli_records')
+            .select('*')
+            .eq('user_id', state.currentUser.id)
+            .order('year', { ascending: true })
+            .order('dated', { ascending: true });
+            
+          if (!error && data) {
+            state.pliData = data;
+          } else {
+            console.warn("Table pli_records not found, using localStorage cache.");
+            loadLocalCache();
+          }
+        } catch (e) {
+          console.warn("DB connection error, using local storage cache:", e);
+          loadLocalCache();
+        }
+      } else {
+        loadLocalCache();
+      }
+      
+      loadPliStats();
+      renderPliLedger();
+      renderPliCharts();
+    }
+
+    function loadLocalCache() {
+      const saved = localStorage.getItem(`finance_pli_data_${state.currentUser.id}`);
+      if (saved) {
+        try {
+          state.pliData = JSON.parse(saved);
+        } catch (e) {
+          state.pliData = [...defaultPliRecords];
+        }
+      } else {
+        state.pliData = [...defaultPliRecords];
+        localStorage.setItem(`finance_pli_data_${state.currentUser.id}`, JSON.stringify(state.pliData));
+      }
+    }
+
+    // Render Ledger table matching Excel layout
+    window.renderPliLedger = function() {
+      const tbody = document.getElementById('pli-ledger-tbody');
+      if (!tbody) return;
+      
+      const filter = document.getElementById('ledger-year-filter').value;
+      
+      let records = [...state.pliData];
+      if (filter !== 'ALL') {
+        const yr = parseInt(filter);
+        records = records.filter(r => r.year === yr);
+      }
+      
+      let html = '';
+      if (records.length === 0) {
+        html = `<tr><td colspan="7" class="excel-cell-center" style="color: #6b7280; padding: 2rem;">No ledger records found for ${filter === 'ALL' ? 'any year' : filter}. Click 'Add Row' to insert details.</td></tr>`;
+      } else {
+        records.forEach((row, idx) => {
+          html += `
+            <tr id="pli-row-${row.id || idx}">
+              <td class="excel-cell-center font-bold">${idx + 1}</td>
+              <td class="excel-cell-center">
+                <input type="text" class="excel-input excel-cell-center cell-month" value="${row.month}" onchange="updateLocalLedgerRow('${row.id || idx}')" style="text-transform: uppercase;">
+              </td>
+              <td class="excel-cell-center">
+                <input type="number" class="excel-input excel-cell-center cell-year" value="${row.year}" onchange="updateLocalLedgerRow('${row.id || idx}')">
+              </td>
+              <td class="excel-cell-center">
+                <input type="date" class="excel-input excel-cell-center cell-date" value="${row.dated || ''}" onchange="updateLocalLedgerRow('${row.id || idx}')" style="width: 130px;">
+              </td>
+              <td class="excel-cell-right">
+                <input type="number" step="0.01" class="excel-input excel-cell-right cell-premium" value="${row.premium}" onchange="updateLocalLedgerRow('${row.id || idx}')" style="font-weight: bold;">
+              </td>
+              <td class="excel-cell-right">
+                <input type="number" step="0.01" class="excel-input excel-cell-right cell-bonus" value="${row.bonus || 0}" onchange="updateLocalLedgerRow('${row.id || idx}')">
+              </td>
+              <td class="excel-cell-center print-hide">
+                <button class="btn btn-danger" style="padding: 0.15rem 0.35rem; font-size: 11px;" onclick="deleteLedgerRow('${row.id || idx}')">
+                  <i data-lucide="trash-2" style="width: 12px; height: 12px;"></i>
+                </button>
+              </td>
+            </tr>
+          `;
+        });
+      }
+      
+      tbody.innerHTML = html;
+      lucide.createIcons();
+      recalculateStats();
+    };
+
+    // Update row changes in the state
+    window.updateLocalLedgerRow = function(idStr) {
+      const rowEl = document.getElementById(`pli-row-${idStr}`);
+      if (!rowEl) return;
+      
+      const month = rowEl.querySelector('.cell-month').value.toUpperCase();
+      const year = parseInt(rowEl.querySelector('.cell-year').value) || 2023;
+      const dated = rowEl.querySelector('.cell-date').value;
+      const premium = parseFloat(rowEl.querySelector('.cell-premium').value) || 0;
+      const bonus = parseFloat(rowEl.querySelector('.cell-bonus').value) || 0;
+      
+      // Update item in state
+      const isIndex = !isNaN(idStr);
+      if (isIndex) {
+        const idx = parseInt(idStr);
+        if (state.pliData[idx]) {
+          state.pliData[idx].month = month;
+          state.pliData[idx].year = year;
+          state.pliData[idx].dated = dated;
+          state.pliData[idx].premium = premium;
+          state.pliData[idx].bonus = bonus;
+        }
+      } else {
+        const rec = state.pliData.find(r => r.id === idStr);
+        if (rec) {
+          rec.month = month;
+          rec.year = year;
+          rec.dated = dated;
+          rec.premium = premium;
+          rec.bonus = bonus;
+        }
+      }
+      
+      localStorage.setItem(`finance_pli_data_${state.currentUser.id}`, JSON.stringify(state.pliData));
+      recalculateStats();
+    };
+
+    // Add empty row
+    window.addNewLedgerRow = function() {
+      const filterYear = document.getElementById('ledger-year-filter').value;
+      const defaultYear = filterYear === 'ALL' ? new Date().getFullYear() : parseInt(filterYear);
+      
+      const newRow = {
+        month: 'OCTOBER',
+        year: defaultYear,
+        dated: new Date().toISOString().split('T')[0],
+        premium: 4128,
+        bonus: 0
+      };
+      
+      state.pliData.push(newRow);
+      localStorage.setItem(`finance_pli_data_${state.currentUser.id}`, JSON.stringify(state.pliData));
+      
+      renderPliLedger();
+      showToast('New row added. Click Save changes to sync.', 'success');
+    };
+
+    // Delete row
+    window.deleteLedgerRow = async function(idStr) {
+      const confirmDelete = confirm('Are you sure you want to delete this row?');
+      if (!confirmDelete) return;
+      
+      const isIndex = !isNaN(idStr);
+      if (isIndex) {
+        const idx = parseInt(idStr);
+        state.pliData.splice(idx, 1);
+        localStorage.setItem(`finance_pli_data_${state.currentUser.id}`, JSON.stringify(state.pliData));
+        showToast('Row removed from drafts.', 'success');
+        renderPliLedger();
+      } else {
+        if (state.supabase) {
+          try {
+            const { error } = await state.supabase
+              .from('pli_records')
+              .delete()
+              .eq('id', idStr);
+              
+            if (!error) {
+              state.pliData = state.pliData.filter(r => r.id !== idStr);
+              localStorage.setItem(`finance_pli_data_${state.currentUser.id}`, JSON.stringify(state.pliData));
+              showToast('Row deleted from database.', 'success');
+              renderPliLedger();
+            } else {
+              showToast(error.message, 'error');
+            }
+          } catch (e) {
+            showToast('Failed to delete from DB.', 'error');
+          }
+        }
+      }
+    };
+
+    // Submit form logic
+    window.handlePliSubmit = async function(e) {
+      e.preventDefault();
+      
+      const month = document.getElementById('entry-month').value;
+      const year = parseInt(document.getElementById('entry-year').value);
+      const dated = document.getElementById('entry-date').value;
+      const premium = parseFloat(document.getElementById('entry-premium').value) || 0;
+      const bonus = parseFloat(document.getElementById('entry-bonus').value) || 0;
+      
+      const payload = {
+        month,
+        year,
+        dated,
+        premium,
+        bonus
+      };
+      
+      // Save locally
+      state.pliData.push(payload);
+      localStorage.setItem(`finance_pli_data_${state.currentUser.id}`, JSON.stringify(state.pliData));
+      
+      if (state.supabase) {
+        try {
+          const dbPayload = {
+            user_id: state.currentUser.id,
+            ...payload
+          };
+          const { error } = await state.supabase.from('pli_records').insert(dbPayload);
+          if (!error) {
+            showToast('PLI Record logged to database successfully!', 'success');
+          } else {
+            showToast('Logged locally. Schema update required for DB sync.', 'warning');
+          }
+        } catch (e) {
+          showToast('Logged locally. DB offline.', 'warning');
+        }
+      } else {
+        showToast('Record logged locally.', 'success');
+      }
+      
+      document.getElementById('pli-entry-form').reset();
+      switchPliTab('sheet');
+      loadPliData();
+    };
+
+    // Bulk save changes to Supabase
+    window.syncLedgerToDatabase = async function() {
+      if (!state.supabase) {
+        showToast('Supabase is not configured. Saving changes to local browser storage only.', 'info');
+        return;
+      }
+      
+      try {
+        // Upsert all rows into database
+        const rowsToSync = state.pliData.map(r => {
+          const syncedRow = {
+            user_id: state.currentUser.id,
+            month: r.month,
+            year: r.year,
+            dated: r.dated,
+            premium: r.premium,
+            bonus: r.bonus
+          };
+          if (r.id) syncedRow.id = r.id;
+          return syncedRow;
+        });
+        
+        const { data, error } = await state.supabase
+          .from('pli_records')
+          .upsert(rowsToSync, { onConflict: 'user_id, month, year' });
+          
+        if (!error) {
+          showToast('Ledger successfully synced with Supabase!', 'success');
+          await loadPliData();
+        } else {
+          console.error(error);
+          showToast('Sync failed: ensure the pli_records table is created in your database.', 'error');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Database offline.', 'error');
+      }
+    };
+
+    // Export SheetJS
+    window.exportPliToExcel = function() {
+      const recordsToExport = state.pliData.map((r, idx) => ({
+        'SL.NO.': idx + 1,
+        'MONTHS': r.month,
+        'YEAR': r.year,
+        'DATED': formatExcelDate(r.dated),
+        'PREMIUM': r.premium === 0 ? '-' : r.premium,
+        'BONUS': r.bonus === 0 ? '' : r.bonus
+      }));
+      
+      const ws = XLSX.utils.json_to_sheet(recordsToExport);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "PLI Ledger");
+      XLSX.writeFile(wb, "PLI_Ledger_Report.xlsx");
+      showToast('Exported to Excel successfully!', 'success');
+    };
+
+    // Theme switching logic
+    function applyTheme(themeName) {
+      document.documentElement.className = `theme-${themeName}`;
+      localStorage.setItem('finance_theme', themeName);
+    }
+
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', async () => {
+      lucide.createIcons();
+      initSupabase();
+      await checkUserSession();
+      
+      // Sync Theme dropdown
+      const sidebarTheme = document.getElementById('sidebar-theme-select');
+      if (sidebarTheme) {
+        sidebarTheme.value = localStorage.getItem('finance_theme') || 'midnight';
+        sidebarTheme.addEventListener('change', (e) => applyTheme(e.target.value));
+      }
+      
+      // Default date to today in form
+      const todayInput = document.getElementById('entry-date');
+      if (todayInput) {
+        todayInput.value = new Date().toISOString().split('T')[0];
+      }
+      
+      // Initialize flatpickr custom calendars
+      if (typeof flatpickr !== 'undefined') {
+        flatpickr('input[type="date"]', {
+          dateFormat: "Y-m-d",
+          allowInput: true
+        });
+      }
+      
+      document.getElementById('btn-logout').addEventListener('click', handleLogout);
+    });
+  </script>
+
+</body>
+</html>

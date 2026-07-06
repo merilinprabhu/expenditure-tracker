@@ -230,6 +230,11 @@
       width: 100%;
     }
 
+    select.form-control option {
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+
     .form-control:focus {
       border-color: var(--accent-primary);
       box-shadow: 0 0 0 3px var(--accent-primary-glow);
@@ -377,12 +382,11 @@
       pointer-events: auto;
       min-width: 300px;
       max-width: 450px;
-      background: rgba(21, 28, 44, 0.85);
-      backdrop-filter: blur(15px);
-      border: 1px solid var(--glass-border);
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.15);
       padding: 1rem 1.25rem;
       border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
       display: flex;
       align-items: center;
       gap: 0.75rem;
@@ -407,22 +411,37 @@
 
     .toast-message {
       font-size: 0.9rem;
-      color: var(--text-primary);
+      color: #ffffff;
       flex-grow: 1;
+      font-weight: 500;
     }
 
     .toast-close {
       background: transparent;
       border: none;
-      color: var(--text-muted);
+      color: #9ca3af;
       cursor: pointer;
       font-size: 1rem;
+      transition: color 0.2s;
+    }
+    .toast-close:hover {
+      color: #ffffff;
     }
 
     .toast-success .toast-icon { background: rgba(16, 185, 129, 0.2); color: #10b981; }
     .toast-error .toast-icon { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
     .toast-info .toast-icon { background: rgba(99, 102, 241, 0.2); color: #6366f1; }
     .toast-warning .toast-icon { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+      }
+      form, button, #toast-container, .toast, .auth-brand {
+        display: none !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -596,8 +615,8 @@
   <script>
     // State Manager
     const state = {
-      supabaseUrl: localStorage.getItem('finance_sb_url') || '',
-      supabaseAnonKey: localStorage.getItem('finance_sb_key') || '',
+      supabaseUrl: localStorage.getItem('finance_sb_url') || 'https://ovxmbpwugjjdmlhabres.supabase.co',
+      supabaseAnonKey: localStorage.getItem('finance_sb_key') || 'sb_publishable_0JZqTDzC3nu2zkBKmwcXxQ_eQlauotg',
       supabase: null
     };
 
