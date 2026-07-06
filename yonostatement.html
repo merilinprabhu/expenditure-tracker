@@ -699,6 +699,77 @@
       color: white;
     }
 
+    .hover-menu-item {
+      color: var(--text-primary) !important;
+      transition: all 0.2s ease;
+    }
+
+    .hover-menu-item:hover {
+      background: var(--bg-hover) !important;
+      color: white !important;
+    }
+
+    /* Floating Excel-like Filter Menu Styling overrides */
+    #excel-filter-menu {
+      background: var(--bg-card) !important;
+      backdrop-filter: blur(16px) !important;
+      -webkit-backdrop-filter: blur(16px) !important;
+      border: 1px solid var(--glass-border) !important;
+      box-shadow: 0 10px 30px var(--glass-shadow) !important;
+      color: var(--text-primary) !important;
+    }
+    #excel-filter-menu label {
+      color: var(--text-primary) !important;
+    }
+    #excel-filter-menu span {
+      color: var(--text-primary) !important;
+    }
+    #excel-filter-menu .hover-menu-item span {
+      color: var(--text-secondary) !important;
+    }
+    #excel-filter-menu .hover-menu-item:hover span {
+      color: var(--text-primary) !important;
+    }
+    #excel-filter-menu button.btn {
+      color: var(--text-primary) !important;
+      background: var(--bg-hover) !important;
+      border: 1px solid var(--glass-border) !important;
+    }
+    #excel-filter-menu button.btn:hover {
+      background: rgba(255, 255, 255, 0.15) !important;
+      color: white !important;
+    }
+    #excel-filter-menu button.btn-primary {
+      background: var(--accent-primary) !important;
+      border-color: var(--accent-primary) !important;
+      color: white !important;
+    }
+    #excel-filter-menu button.btn-primary:hover {
+      background: #4f46e5 !important;
+    }
+    #excel-filter-menu input[type="text"] {
+      color: var(--text-primary) !important;
+      background: var(--bg-hover) !important;
+      border: 1px solid var(--glass-border) !important;
+    }
+    #excel-filter-menu input[type="text"]::placeholder {
+      color: var(--text-secondary) !important;
+      opacity: 0.6;
+    }
+    #col-filter-list::-webkit-scrollbar {
+      width: 6px;
+    }
+    #col-filter-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    #col-filter-list::-webkit-scrollbar-thumb {
+      background: var(--glass-border) !important;
+      border-radius: 3px;
+    }
+    #col-filter-list::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
     .btn-primary {
       background: var(--accent-primary);
       border-color: var(--accent-primary);
@@ -1844,15 +1915,60 @@
                   <tr>
                     <th style="width: 35px; text-align: center;"><input type="checkbox" id="yono-select-all" onclick="toggleSelectAllYono(this)" style="cursor: pointer;"></th>
                     <th style="width: 50px; font-weight: 500; font-size: 0.85rem; color: var(--text-secondary); letter-spacing: 0.5px;">S. No.</th>
-                    <th onclick="handleLedgerSort('date')" style="cursor: pointer; width: 90px; user-select: none;">Date <span id="sort-icon-date" style="margin-left: 0.25rem; font-size: 0.75rem;">↕</span></th>
-                    <th onclick="handleLedgerSort('cretarias')" style="cursor: pointer; min-width: 110px; user-select: none;">Cretarias <span id="sort-icon-cretarias" style="margin-left: 0.25rem; font-size: 0.75rem;">↕</span></th>
-                    <th onclick="handleLedgerSort('purpose')" style="cursor: pointer; min-width: 120px; user-select: none;">Purpose <span id="sort-icon-purpose" style="margin-left: 0.25rem; font-size: 0.75rem;">↕</span></th>
-                    <th onclick="handleLedgerSort('person')" style="cursor: pointer; min-width: 90px; user-select: none;">Person <span id="sort-icon-person" style="margin-left: 0.25rem; font-size: 0.75rem;">↕</span></th>
-                    <th onclick="handleLedgerSort('brief')" style="cursor: pointer; min-width: 110px; user-select: none;">Brief <span id="sort-icon-brief" style="margin-left: 0.25rem; font-size: 0.75rem;">↕</span></th>
-                    <th onclick="handleLedgerSort('details')" style="cursor: pointer; min-width: 150px; user-select: none;">Details <span id="sort-icon-details" style="margin-left: 0.25rem; font-size: 0.75rem;">↕</span></th>
-                    <th onclick="handleLedgerSort('debit')" style="cursor: pointer; width: 90px; user-select: none;">Debit(-) <span id="sort-icon-debit" style="margin-left: 0.25rem; font-size: 0.75rem;">↕</span></th>
-                    <th onclick="handleLedgerSort('credit')" style="cursor: pointer; width: 90px; user-select: none;">Credit(+) <span id="sort-icon-credit" style="margin-left: 0.25rem; font-size: 0.75rem;">↕</span></th>
-                    <th onclick="handleLedgerSort('balance')" style="cursor: pointer; width: 95px; user-select: none;">Balance <span id="sort-icon-balance" style="margin-left: 0.25rem; font-size: 0.75rem;">↕</span></th>
+                    <th style="width: 105px; user-select: none; padding: 0.5rem 0.4rem;">
+                      <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.2rem;">
+                        <span onclick="handleLedgerSort('date')" style="cursor: pointer; flex: 1; text-align: left;">Date <span id="sort-icon-date" style="margin-left: 0.15rem; font-size: 0.7rem; opacity: 0.3;">↕</span></span>
+                        <span onclick="toggleColumnFilterMenu(event, 'date')" class="col-filter-icon" id="filter-icon-date" style="cursor: pointer; opacity: 0.6; padding: 0.15rem;" title="Filter Date"><i data-lucide="filter" style="width: 11px; height: 11px;"></i></span>
+                      </div>
+                    </th>
+                    <th style="min-width: 125px; user-select: none; padding: 0.5rem 0.4rem;">
+                      <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.2rem;">
+                        <span onclick="handleLedgerSort('cretarias')" style="cursor: pointer; flex: 1; text-align: left;">Cretarias <span id="sort-icon-cretarias" style="margin-left: 0.15rem; font-size: 0.7rem; opacity: 0.3;">↕</span></span>
+                        <span onclick="toggleColumnFilterMenu(event, 'cretarias')" class="col-filter-icon" id="filter-icon-cretarias" style="cursor: pointer; opacity: 0.6; padding: 0.15rem;" title="Filter Criterias"><i data-lucide="filter" style="width: 11px; height: 11px;"></i></span>
+                      </div>
+                    </th>
+                    <th style="min-width: 135px; user-select: none; padding: 0.5rem 0.4rem;">
+                      <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.2rem;">
+                        <span onclick="handleLedgerSort('purpose')" style="cursor: pointer; flex: 1; text-align: left;">Purpose <span id="sort-icon-purpose" style="margin-left: 0.15rem; font-size: 0.7rem; opacity: 0.3;">↕</span></span>
+                        <span onclick="toggleColumnFilterMenu(event, 'purpose')" class="col-filter-icon" id="filter-icon-purpose" style="cursor: pointer; opacity: 0.6; padding: 0.15rem;" title="Filter Purposes"><i data-lucide="filter" style="width: 11px; height: 11px;"></i></span>
+                      </div>
+                    </th>
+                    <th style="min-width: 105px; user-select: none; padding: 0.5rem 0.4rem;">
+                      <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.2rem;">
+                        <span onclick="handleLedgerSort('person')" style="cursor: pointer; flex: 1; text-align: left;">Person <span id="sort-icon-person" style="margin-left: 0.15rem; font-size: 0.7rem; opacity: 0.3;">↕</span></span>
+                        <span onclick="toggleColumnFilterMenu(event, 'person')" class="col-filter-icon" id="filter-icon-person" style="cursor: pointer; opacity: 0.6; padding: 0.15rem;" title="Filter Persons"><i data-lucide="filter" style="width: 11px; height: 11px;"></i></span>
+                      </div>
+                    </th>
+                    <th style="min-width: 125px; user-select: none; padding: 0.5rem 0.4rem;">
+                      <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.2rem;">
+                        <span onclick="handleLedgerSort('brief')" style="cursor: pointer; flex: 1; text-align: left;">Brief <span id="sort-icon-brief" style="margin-left: 0.15rem; font-size: 0.7rem; opacity: 0.3;">↕</span></span>
+                        <span onclick="toggleColumnFilterMenu(event, 'brief')" class="col-filter-icon" id="filter-icon-brief" style="cursor: pointer; opacity: 0.6; padding: 0.15rem;" title="Filter Briefs"><i data-lucide="filter" style="width: 11px; height: 11px;"></i></span>
+                      </div>
+                    </th>
+                    <th style="min-width: 165px; user-select: none; padding: 0.5rem 0.4rem;">
+                      <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.2rem;">
+                        <span onclick="handleLedgerSort('details')" style="cursor: pointer; flex: 1; text-align: left;">Details <span id="sort-icon-details" style="margin-left: 0.15rem; font-size: 0.7rem; opacity: 0.3;">↕</span></span>
+                        <span onclick="toggleColumnFilterMenu(event, 'details')" class="col-filter-icon" id="filter-icon-details" style="cursor: pointer; opacity: 0.6; padding: 0.15rem;" title="Filter Details"><i data-lucide="filter" style="width: 11px; height: 11px;"></i></span>
+                      </div>
+                    </th>
+                    <th style="width: 95px; user-select: none; padding: 0.5rem 0.4rem;">
+                      <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.2rem;">
+                        <span onclick="handleLedgerSort('debit')" style="cursor: pointer; flex: 1; text-align: left;">Debit(-) <span id="sort-icon-debit" style="margin-left: 0.15rem; font-size: 0.7rem; opacity: 0.3;">↕</span></span>
+                        <span onclick="toggleColumnFilterMenu(event, 'debit')" class="col-filter-icon" id="filter-icon-debit" style="cursor: pointer; opacity: 0.6; padding: 0.15rem;" title="Filter Debit"><i data-lucide="filter" style="width: 11px; height: 11px;"></i></span>
+                      </div>
+                    </th>
+                    <th style="width: 95px; user-select: none; padding: 0.5rem 0.4rem;">
+                      <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.2rem;">
+                        <span onclick="handleLedgerSort('credit')" style="cursor: pointer; flex: 1; text-align: left;">Credit(+) <span id="sort-icon-credit" style="margin-left: 0.15rem; font-size: 0.7rem; opacity: 0.3;">↕</span></span>
+                        <span onclick="toggleColumnFilterMenu(event, 'credit')" class="col-filter-icon" id="filter-icon-credit" style="cursor: pointer; opacity: 0.6; padding: 0.15rem;" title="Filter Credit"><i data-lucide="filter" style="width: 11px; height: 11px;"></i></span>
+                      </div>
+                    </th>
+                    <th style="width: 100px; user-select: none; padding: 0.5rem 0.4rem;">
+                      <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.2rem;">
+                        <span onclick="handleLedgerSort('balance')" style="cursor: pointer; flex: 1; text-align: left;">Balance <span id="sort-icon-balance" style="margin-left: 0.15rem; font-size: 0.7rem; opacity: 0.3;">↕</span></span>
+                        <span onclick="toggleColumnFilterMenu(event, 'balance')" class="col-filter-icon" id="filter-icon-balance" style="cursor: pointer; opacity: 0.6; padding: 0.15rem;" title="Filter Balance"><i data-lucide="filter" style="width: 11px; height: 11px;"></i></span>
+                      </div>
+                    </th>
                   </tr>
                 </thead>
                 <tbody id="yono-tbody">
@@ -2084,7 +2200,10 @@
       <datalist id="yono-purpose-datalist"></datalist>
       <datalist id="default-import-purpose-datalist"></datalist>
       <datalist id="yono-person-datalist"></datalist>
-
+      <!-- Floating Excel-like column filter/sort menu -->
+      <div id="excel-filter-menu" class="glass-card" style="display: none; position: absolute; z-index: 10000; width: 260px; padding: 0.75rem; border: 1px solid var(--glass-border); box-shadow: 0 10px 25px rgba(0,0,0,0.6); border-radius: 8px; font-family: inherit; font-size: 0.8rem; color: var(--text-primary);">
+        <!-- Populated dynamically via javascript -->
+      </div>
     </main>
   </div>
 
@@ -2103,7 +2222,18 @@
       pliData: [],
       criterias: {},
       persons: [],
-      budgets: {}
+      budgets: {},
+      columnFilters: {
+        date: null,
+        cretarias: null,
+        purpose: null,
+        person: null,
+        brief: null,
+        details: null,
+        debit: null,
+        credit: null,
+        balance: null
+      }
     };
 
     // SQL Schema string to display in settings
@@ -2656,7 +2786,9 @@ create policy "Users can delete their own pli records" on public.pli_records for
     }
 
     function getCretariasSelectHTML(selectedVal, onChangeAttr) {
-      return `<input type="text" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.85rem; background: transparent; border: none; width: 100%; min-width: 100px; max-width: 130px;" list="yono-cretarias-datalist" value="${selectedVal || ''}" ${onChangeAttr}>`;
+      const isEmpty = !selectedVal || selectedVal.trim() === '';
+      const emptyStyle = isEmpty ? 'border-bottom: 2px dashed #f59e0b !important; background: rgba(245, 158, 11, 0.05);' : '';
+      return `<input type="text" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.85rem; background: transparent; border: none; width: 100%; min-width: 100px; max-width: 130px; ${emptyStyle}" list="yono-cretarias-datalist" value="${selectedVal || ''}" ${onChangeAttr}>`;
     }
 
     function getPurposeSelectHTML(cretariasVal, selectedVal, onChangeAttr, id = 'default') {
@@ -2664,14 +2796,18 @@ create policy "Users can delete their own pli records" on public.pli_records for
       const sortedList = [...list].sort((a,b) => a.localeCompare(b));
       const datalistId = `datalist-purpose-${id}`;
       const options = sortedList.map(p => `<option value="${p}"></option>`).join('');
+      const isEmpty = !selectedVal || selectedVal.trim() === '';
+      const emptyStyle = isEmpty ? 'border-bottom: 2px dashed #f59e0b !important; background: rgba(245, 158, 11, 0.05);' : '';
       return `
-        <input type="text" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.85rem; background: transparent; border: none; width: 100%; min-width: 120px; max-width: 160px;" list="${datalistId}" value="${selectedVal || ''}" ${onChangeAttr}>
+        <input type="text" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.85rem; background: transparent; border: none; width: 100%; min-width: 120px; max-width: 160px; ${emptyStyle}" list="${datalistId}" value="${selectedVal || ''}" ${onChangeAttr}>
         <datalist id="${datalistId}">${options}</datalist>
       `;
     }
 
     function getPersonSelectHTML(selectedVal, onChangeAttr) {
-      return `<input type="text" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.85rem; background: transparent; border: none; width: 100%; min-width: 100px; max-width: 130px;" list="yono-person-datalist" value="${selectedVal || ''}" ${onChangeAttr}>`;
+      const isEmpty = !selectedVal || selectedVal.trim() === '';
+      const emptyStyle = isEmpty ? 'border-bottom: 2px dashed #f59e0b !important; background: rgba(245, 158, 11, 0.05);' : '';
+      return `<input type="text" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.85rem; background: transparent; border: none; width: 100%; min-width: 100px; max-width: 130px; ${emptyStyle}" list="yono-person-datalist" value="${selectedVal || ''}" ${onChangeAttr}>`;
     }
 
     window.handleLedgerCretariasChange = async function(id, newCretarias) {
@@ -2690,6 +2826,236 @@ create policy "Users can delete their own pli records" on public.pli_records for
         datalist.innerHTML = sortedList.map(p => `<option value="${p}"></option>`).join('');
       }
     };
+    
+    // Excel column filtering logic and functions
+    window.toggleColumnFilterMenu = function(event, colName) {
+      event.stopPropagation();
+      const menu = document.getElementById('excel-filter-menu');
+      if (!menu) return;
+      
+      // If menu is open for the same column, toggle it off
+      if (menu.style.display === 'block' && menu.dataset.column === colName) {
+        menu.style.display = 'none';
+        return;
+      }
+      
+      menu.dataset.column = colName;
+      
+      // Calculate position below the click element
+      const rect = event.currentTarget.getBoundingClientRect();
+      menu.style.left = `${rect.left + window.scrollX - 200}px`; // Shift left so it opens well
+      menu.style.top = `${rect.bottom + window.scrollY + 5}px`;
+      menu.style.display = 'block';
+      
+      // Populate unique values
+      const uniqueVals = Array.from(new Set(state.yonoData.map(tx => {
+        const val = tx[colName];
+        return (val === null || val === undefined) ? '' : val.toString().trim();
+      }))).sort((a, b) => {
+        if (['debit', 'credit', 'balance'].includes(colName)) {
+          return parseFloat(a || 0) - parseFloat(b || 0);
+        }
+        return a.localeCompare(b);
+      });
+      
+      const filterActive = state.columnFilters[colName] !== null;
+      const allowedSet = filterActive ? new Set(state.columnFilters[colName]) : null;
+      
+      const checkboxesHtml = uniqueVals.map(val => {
+        const displayVal = val === '' ? '(Blanks)' : val;
+        const isChecked = allowedSet === null || allowedSet.has(val);
+        return `
+          <label style="display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.25rem; font-weight: normal; cursor: pointer; font-size: 0.8rem; user-select: none;">
+            <input type="checkbox" class="col-filter-checkbox" value="${val}" ${isChecked ? 'checked' : ''} onchange="updateExcelSelectAllState()">
+            <span>${displayVal}</span>
+          </label>
+        `;
+      }).join('');
+      
+      const isSelectAllChecked = allowedSet === null || allowedSet.size === uniqueVals.length;
+      
+      let sortAscText = 'Sort A to Z';
+      let sortDescText = 'Sort Z to A';
+      if (['debit', 'credit', 'balance'].includes(colName)) {
+        sortAscText = 'Sort Smallest to Largest';
+        sortDescText = 'Sort Largest to Smallest';
+      } else if (colName === 'date') {
+        sortAscText = 'Sort Oldest to Newest';
+        sortDescText = 'Sort Newest to Oldest';
+      }
+      
+      menu.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+          <div onclick="sortColumnDirectly('${colName}', 'asc')" style="padding: 0.35rem 0.5rem; cursor: pointer; border-radius: 4px; display: flex; align-items: center; gap: 0.5rem; font-weight: 500;" class="hover-menu-item">
+            <i data-lucide="sort-asc" style="width: 14px; height: 14px; color: var(--accent-primary);"></i>
+            <span>${sortAscText}</span>
+          </div>
+          <div onclick="sortColumnDirectly('${colName}', 'desc')" style="padding: 0.35rem 0.5rem; cursor: pointer; border-radius: 4px; display: flex; align-items: center; gap: 0.5rem; font-weight: 500;" class="hover-menu-item">
+            <i data-lucide="sort-desc" style="width: 14px; height: 14px; color: var(--accent-primary);"></i>
+            <span>${sortDescText}</span>
+          </div>
+          
+          <div style="height: 1px; background: var(--glass-border); margin: 0.25rem 0;"></div>
+          
+          <div onclick="clearColumnFilter('${colName}')" style="padding: 0.35rem 0.5rem; cursor: pointer; border-radius: 4px; display: flex; align-items: center; gap: 0.5rem; color: #f87171; font-weight: 500;" class="hover-menu-item">
+            <i data-lucide="filter-x" style="width: 14px; height: 14px;"></i>
+            <span>Clear Filter From "${colName.toUpperCase()}"</span>
+          </div>
+          
+          <div style="height: 1px; background: var(--glass-border); margin: 0.25rem 0;"></div>
+          
+          <input type="text" id="col-filter-search" class="form-control" style="width: 100%; padding: 0.25rem 0.5rem; font-size: 0.75rem; background: var(--bg-hover); border: 1px solid var(--glass-border); border-radius: 4px;" placeholder="Search..." oninput="filterCheckboxItems(this.value)">
+          
+          <div style="max-height: 150px; overflow-y: auto; padding: 0.25rem 0.1rem; display: flex; flex-direction: column;">
+            <label style="display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.4rem; font-weight: bold; cursor: pointer; font-size: 0.8rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.25rem; user-select: none;">
+              <input type="checkbox" id="col-filter-select-all" ${isSelectAllChecked ? 'checked' : ''} onchange="toggleExcelSelectAll(this)">
+              <span>(Select All)</span>
+            </label>
+            <div id="col-filter-checkboxes-container">
+              ${checkboxesHtml}
+            </div>
+          </div>
+          
+          <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 0.25rem; border-top: 1px solid var(--glass-border); padding-top: 0.5rem;">
+            <button onclick="applyColumnFilter('${colName}')" class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.75rem; border-radius: 4px; font-weight: bold;">OK</button>
+            <button onclick="closeExcelFilterMenu()" class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.75rem; background: transparent; border: 1px solid var(--glass-border); color: var(--text-secondary); border-radius: 4px;">Cancel</button>
+          </div>
+        </div>
+      `;
+      
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+      
+      setTimeout(() => {
+        const sInput = document.getElementById('col-filter-search');
+        if (sInput) sInput.focus();
+      }, 50);
+    };
+
+    window.closeExcelFilterMenu = function() {
+      const menu = document.getElementById('excel-filter-menu');
+      if (menu) menu.style.display = 'none';
+    };
+
+    window.toggleExcelSelectAll = function(master) {
+      const checkboxes = document.querySelectorAll('#col-filter-checkboxes-container input[type="checkbox"]');
+      checkboxes.forEach(cb => {
+        const label = cb.closest('label');
+        if (label && label.style.display !== 'none') {
+          cb.checked = master.checked;
+        }
+      });
+    };
+
+    window.updateExcelSelectAllState = function() {
+      const master = document.getElementById('col-filter-select-all');
+      if (!master) return;
+      
+      const visibleCheckboxes = Array.from(document.querySelectorAll('#col-filter-checkboxes-container input[type="checkbox"]')).filter(cb => {
+        const label = cb.closest('label');
+        return label && label.style.display !== 'none';
+      });
+      
+      const checkedVisible = visibleCheckboxes.filter(cb => cb.checked);
+      master.checked = (visibleCheckboxes.length > 0 && checkedVisible.length === visibleCheckboxes.length);
+    };
+
+    window.filterCheckboxItems = function(query) {
+      const normalizedQuery = query.toLowerCase().trim();
+      const checkboxes = document.querySelectorAll('#col-filter-checkboxes-container input[type="checkbox"]');
+      checkboxes.forEach(cb => {
+        const label = cb.closest('label');
+        if (!label) return;
+        const valText = label.innerText.toLowerCase();
+        if (valText.includes(normalizedQuery)) {
+          label.style.display = 'flex';
+        } else {
+          label.style.display = 'none';
+        }
+      });
+      updateExcelSelectAllState();
+    };
+
+    window.applyColumnFilter = function(colName) {
+      const checkboxes = document.querySelectorAll('#col-filter-checkboxes-container input[type="checkbox"]');
+      const selected = [];
+      const allValues = [];
+      
+      checkboxes.forEach(cb => {
+        allValues.push(cb.value);
+        if (cb.checked) {
+          selected.push(cb.value);
+        }
+      });
+      
+      if (selected.length === allValues.length || selected.length === 0) {
+        state.columnFilters[colName] = null;
+      } else {
+        state.columnFilters[colName] = selected;
+      }
+      
+      updateFilterIconHighlight(colName);
+      renderYonoTable();
+      closeExcelFilterMenu();
+    };
+
+    window.clearColumnFilter = function(colName) {
+      state.columnFilters[colName] = null;
+      updateFilterIconHighlight(colName);
+      renderYonoTable();
+      closeExcelFilterMenu();
+    };
+
+    window.updateFilterIconHighlight = function(colName) {
+      const icon = document.getElementById(`filter-icon-${colName}`);
+      if (!icon) return;
+      const isActive = state.columnFilters[colName] !== null;
+      if (isActive) {
+        icon.style.color = '#3b82f6';
+        icon.style.opacity = '1.0';
+      } else {
+        icon.style.color = '';
+        icon.style.opacity = '0.6';
+      }
+    };
+
+    window.sortColumnDirectly = function(column, dir) {
+      state.sortColumn = column;
+      state.sortDirection = dir;
+      
+      state.yonoData.sort((a, b) => {
+        let valA = a[column];
+        let valB = b[column];
+        
+        if (['debit', 'credit', 'balance'].includes(column)) {
+          valA = parseFloat(valA || 0);
+          valB = parseFloat(valB || 0);
+        } else if (column === 'date') {
+          const dateA = new Date(valA);
+          const dateB = new Date(valB);
+          valA = isNaN(dateA.getTime()) ? 0 : dateA.getTime();
+          valB = isNaN(dateB.getTime()) ? 0 : dateB.getTime();
+        } else {
+          valA = (valA || '').toString().toLowerCase();
+          valB = (valB || '').toString().toLowerCase();
+        }
+        
+        if (valA < valB) return dir === 'asc' ? -1 : 1;
+        if (valA > valB) return dir === 'asc' ? 1 : -1;
+        return 0;
+      });
+      
+      renderYonoTable();
+      closeExcelFilterMenu();
+    };
+
+    // Close menu when clicking outside
+    document.addEventListener('click', function(event) {
+      const menu = document.getElementById('excel-filter-menu');
+      if (!menu || menu.style.display === 'none') return;
+      if (!menu.contains(event.target) && !event.target.closest('.col-filter-icon')) {
+        menu.style.display = 'none';
+      }
+    });
 
     // Sorting State
     state.sortColumn = 'date';
@@ -2863,6 +3229,14 @@ create policy "Users can delete their own pli records" on public.pli_records for
       state.selectedYear = 'All';
       renderYearTabs();
       
+      // Reset column filters
+      if (state.columnFilters) {
+        Object.keys(state.columnFilters).forEach(col => {
+          state.columnFilters[col] = null;
+          updateFilterIconHighlight(col);
+        });
+      }
+      
       // Reload table
       renderYonoTable();
       showToast('Filters cleared successfully.', 'info');
@@ -3022,10 +3396,22 @@ create policy "Users can delete their own pli records" on public.pli_records for
           }
         }
         
+        // Column filters check
+        let matchesColumnFilters = true;
+        if (state.columnFilters) {
+          Object.keys(state.columnFilters).forEach(col => {
+            const allowedVals = state.columnFilters[col];
+            if (allowedVals !== null) {
+              const val = (tx[col] === null || tx[col] === undefined) ? '' : tx[col].toString().trim();
+              matchesColumnFilters = matchesColumnFilters && allowedVals.includes(val);
+            }
+          });
+        }
+        
         // Duplicate filter
         const matchesDuplicate = !state.showOnlyDuplicates || (state.yonoDuplicateIds && state.yonoDuplicateIds.has(tx.id));
         
-        return matchesSearch && matchesCretarias && matchesPurpose && matchesPerson && matchesDate && matchesYear && matchesDuplicate;
+        return matchesSearch && matchesCretarias && matchesPurpose && matchesPerson && matchesDate && matchesYear && matchesDuplicate && matchesColumnFilters;
       });
       
       state.filteredYonoData = filtered;
@@ -3054,6 +3440,9 @@ create policy "Users can delete their own pli records" on public.pli_records for
              </div>` 
           : `${idx + 1}`;
         
+        const briefEmptyStyle = (!tx.brief || tx.brief.trim() === '') ? 'border-bottom: 2px dashed #f59e0b !important; background: rgba(245, 158, 11, 0.05);' : '';
+        const detailsEmptyStyle = (!tx.details || tx.details.trim() === '') ? 'border-bottom: 2px dashed #f59e0b !important; background: rgba(245, 158, 11, 0.05);' : '';
+        
         return `
           <tr id="yono-row-${tx.id}" style="${rowStyle}">
             <td style="text-align: center;">
@@ -3071,10 +3460,10 @@ create policy "Users can delete their own pli records" on public.pli_records for
               ${getPersonSelectHTML(tx.person, `onchange="updateRowField('${tx.id}', 'person', this.value)"`)}
             </td>
             <td>
-              <textarea class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.85rem; background: transparent; border: none; min-width: 100px; max-width: 150px; resize: none; overflow: hidden; height: 28px; line-height: 1.2;" onchange="updateRowField('${tx.id}', 'brief', this.value)" onfocus="adjustTextareaHeight(this)" oninput="adjustTextareaHeight(this)" onblur="resetTextareaHeight(this)" placeholder="Write brief...">${tx.brief || ''}</textarea>
+              <textarea class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.85rem; background: transparent; border: none; min-width: 100px; max-width: 150px; resize: none; overflow: hidden; height: 28px; line-height: 1.2; ${briefEmptyStyle}" onchange="updateRowField('${tx.id}', 'brief', this.value)" onfocus="adjustTextareaHeight(this)" oninput="adjustTextareaHeight(this)" onblur="resetTextareaHeight(this)" placeholder="Write brief...">${tx.brief || ''}</textarea>
             </td>
             <td>
-              <textarea class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.85rem; background: transparent; border: none; min-width: 150px; max-width: 250px; resize: none; overflow: hidden; height: 28px; line-height: 1.2;" onchange="updateRowField('${tx.id}', 'details', this.value)" onfocus="adjustTextareaHeight(this)" oninput="adjustTextareaHeight(this)" onblur="resetTextareaHeight(this)" placeholder="Write details...">${tx.details || ''}</textarea>
+              <textarea class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.85rem; background: transparent; border: none; min-width: 150px; max-width: 250px; resize: none; overflow: hidden; height: 28px; line-height: 1.2; ${detailsEmptyStyle}" onchange="updateRowField('${tx.id}', 'details', this.value)" onfocus="adjustTextareaHeight(this)" oninput="adjustTextareaHeight(this)" onblur="resetTextareaHeight(this)" placeholder="Write details...">${tx.details || ''}</textarea>
             </td>
             <td style="font-weight: 500; color: #f87171">${debitText}</td>
             <td style="font-weight: 500; color: #34d399">${creditText}</td>
